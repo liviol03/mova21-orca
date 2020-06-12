@@ -13,7 +13,7 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - bash: apt-get install make
+    - bash: sudo apt-get install make
     - task: Docker@2
       inputs:
         containerRegistry: 'mova21 Container Registry'

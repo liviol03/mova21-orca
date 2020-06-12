@@ -13,8 +13,6 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - bash: apt-get update
-    - bash: apt-get upgrade
     - bash: apt-get install make
     - task: Docker@2
       inputs:

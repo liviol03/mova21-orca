@@ -47,7 +47,7 @@ FROM base AS production
 RUN mkdir -p /app && adduser -D app && chown -R app /app
 WORKDIR /app                                                              
 
-RUN bundle config deployment true && bundle config without test:development 
+RUN bundle config deployment true && bundle config --without development 
                                        
 COPY --chown=app --from=build /app /app                              
 USER app    

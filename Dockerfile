@@ -52,8 +52,8 @@ RUN bundle config deployment true && bundle config --without development test
 COPY --chown=app --from=build /app /app                              
 USER app    
 RUN bundle install --without development test
-RUN bundle clean --without development test
-RUN bundle package --without development test
+RUN bundle clean
+RUN bundle package
                                        
 ENV RAILS_ENV=production               
 ENV NODE_ENV=production 

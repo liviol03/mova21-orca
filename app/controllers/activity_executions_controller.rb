@@ -21,8 +21,8 @@ class ActivityExecutionsController < ApplicationController
 
     # respond_to do |format|
     #   format.json do
-    if @activity.activity_executions.create!(activity_execution_params)
-      render json: { status: :success }
+    if @activity.activity_executions.create(activity_execution_params)
+      render json: { status: :success, acitivty_execution: acitivty_execution }
     else
       render json: { status: :error }
     end
@@ -32,24 +32,21 @@ class ActivityExecutionsController < ApplicationController
   end
 
   #
-  # def update
-  #   if @activity_executions.update(activity_params)
-  #     redirect_to @activity_executions, notice: I18n.t('messages.updated.success')
-  #   else
-  #     render :edit
-  #   end
-  # end
-  #
-  # def destroy
-  #   if params[:attachment_id]
-  #     delete_attachment
-  #   elsif params[:picture_id]
-  #     delete_picture
-  #   else
-  #     @activity_executions.destroy
-  #     redirect_to activities_url, notice: I18n.t('messages.deleted.success')
-  #   end
-  # end
+  def update
+    if @activity_execution.update(activity_execution_params)
+      render json: { status: @activity_execution }
+    else
+      render json: { status: :error }
+    end
+  end
+
+  def destroy
+    if @activity_execution.destroy
+      render json: { status: :success }
+    else
+      render json: { status: :error }
+    end
+  end
 
   private
 

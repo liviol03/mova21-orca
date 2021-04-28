@@ -90,6 +90,15 @@ ActiveRecord::Schema.define(version: 2021_06_22_124902) do
     t.index ["ancestry"], name: "index_activity_categories_on_ancestry"
   end
 
+  create_table "activity_executions", force: :cascade do |t|
+    t.bigint "activity_id", null: false
+    t.datetime "starts_at"
+    t.datetime "ends_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["activity_id"], name: "index_activity_executions_on_activity_id"
+  end
+
   create_table "goals", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
@@ -278,6 +287,7 @@ ActiveRecord::Schema.define(version: 2021_06_22_124902) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "activities", "activity_categories"
   add_foreign_key "activities", "transport_locations"
+  add_foreign_key "activity_executions", "activities"
   add_foreign_key "invoice_parts", "invoices"
   add_foreign_key "invoices", "units"
   add_foreign_key "participant_units", "participants"

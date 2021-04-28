@@ -19,7 +19,9 @@ Rails.application.routes.draw do
     delete 'document/:id', to: 'units#delete_document', as: :document
   end
   resources :leaders, except: [:destroy]
-  resources :activities
+  resources :activities do
+    resources :activity_executions
+  end
 
   namespace :admin do
     get '/', to: 'admin#index'

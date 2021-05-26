@@ -275,7 +275,7 @@ class CalendarManager extends React.Component {
             select={ this.handleDateSelect }
             eventContent={ this.renderEventContent } // custom render function
             eventClick={ this.handleEventClick }
-
+            events={ this.state.currentEvents }
             contentHeight="auto"
           />
         </div>

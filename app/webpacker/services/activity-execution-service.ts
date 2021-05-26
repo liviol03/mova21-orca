@@ -19,7 +19,7 @@ export class ActivityExecutionService {
            method: 'GET',
            headers: this.getHeaders()
         }).then(response => response.json())
-        .then(result =>
+        .then(result => 
             result.map(element => ({
                 id: element.id,
                 start: new Date(element.starts_at),
@@ -31,16 +31,18 @@ export class ActivityExecutionService {
     }
 
     public create(activityId: number, activityExecution: any): Promise<ActivityExectution> {
-        console.log("post")
-        console.log(activityExecution)
         const requestOptions = {
             method: 'POST',
             headers: this.getHeaders(),
             body: JSON.stringify({
-                id: activityExecution.id,
-                starts_at: new Date(activityExecution.start),
-                ends_at: new Date(activityExecution.end),
-                languages: activityExecution.languages
+                "data": {
+                    "type": "activity_execution",
+                    "attributes": {
+                        starts_at: activityExecution.start,
+                        ends_at: activityExecution.end,
+                        languages: activityExecution.languages
+                    }
+                }
             })
         };
 
@@ -53,7 +55,6 @@ export class ActivityExecutionService {
             method: 'PUT',
             headers: this.getHeaders(),
             body: JSON.stringify(activityExecution)
-
         };
 
         return fetch(`/activities/${activityId}/activity_executions/${activityExecution.id}`, requestOptions)

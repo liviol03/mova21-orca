@@ -8,11 +8,11 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import bootstrapPlugin from '@fullcalendar/bootstrap';
+import bootstrapPlugin from '@fullcalendar/bootstrap'
 
 import EventEditor from './eventEditor'
-import InfoSnackbar from './infoSnackbar';
-import ErrorSnackbar from './errorSnackbar';
+import InfoSnackbar from './infoSnackbar'
+import ErrorSnackbar from './errorSnackbar'
 import LoadingBar from './loadingBar'
 
 import { ActivityExecutionService } from "../services/activity-execution-service";
@@ -239,10 +239,10 @@ class CalendarManager extends React.Component {
     const { classes } = this.props
 
     return (
-      <div className='demo-app'>
+      <div className='calendar-manager'>
         { this.renderSidebar() }
 
-        <div className='demo-app-main'>
+        <div className='calendar-manager-main' >
           { this.state.showEditor && (
             /* Show editor based on flag*/
             <EventEditor 
@@ -255,30 +255,29 @@ class CalendarManager extends React.Component {
           }
 
           {/* display fullcalendar */ }
+          <FullCalendar
+            plugins={ [bootstrapPlugin, dayGridPlugin, timeGridPlugin, interactionPlugin] }
+            headerToolbar={ {
+              left: 'prev,next',
+              center: 'title',
+              right: 'timeGridWeek,timeGridDay'
+            } }
+            locale="DE"
+            themeSystem='bootstrap'
+            allDaySlot={ false }  // don't allow full day event
+            firstDay={ 1 }        // set first day of week to monday 1
+            validRange={ { start: START_DATE, end: END_DATE } }   // calendar is only available in given period
+            initialView='timeGridWeek'
+            editable={ true }
+            selectable={ true }
+            selectMirror={ true }
+            dayMaxEvents={ false } 
+            select={ this.handleDateSelect }
+            eventContent={ this.renderEventContent } // custom render function
+            eventClick={ this.handleEventClick }
 
-            <FullCalendar
-              plugins={ [bootstrapPlugin, dayGridPlugin, timeGridPlugin, interactionPlugin] }
-              headerToolbar={ {
-                left: 'prev,next',
-                center: 'title',
-                right: 'timeGridWeek,timeGridDay'
-              } }
-              locale="DE"
-              themeSystem='bootstrap'
-              allDaySlot={ false }  // don't allow full day event
-              firstDay={ 1 }        // set first day of week to monday 1
-              validRange={ { start: START_DATE, end: END_DATE } }   // calendar is only available in given period
-              initialView='timeGridWeek'
-              editable={ true }
-              selectable={ true }
-              selectMirror={ true }
-              dayMaxEvents={ false } 
-              select={ this.handleDateSelect }
-              eventContent={ this.renderEventContent } // custom render function
-              eventClick={ this.handleEventClick }
-              events= { this.state.currentEvents }
-              contentHeight="auto"
-            />
+            contentHeight="auto"
+          />
         </div>
 
         { this.renderHelperElements() }

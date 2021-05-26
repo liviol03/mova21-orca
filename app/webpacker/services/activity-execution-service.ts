@@ -30,25 +30,27 @@ export class ActivityExecutionService {
         )
     }
 
-    public create(activity: Activity, activityExecution: ActivityExectution): Promise<ActivityExectution> {
+    public create(activityId: number, activityExecution: ActivityExectution): Promise<ActivityExectution> {
         const requestOptions = {
             method: 'POST',
             headers: this.getHeaders(),
             body: JSON.stringify(activityExecution)
 
         };
-        return fetch(`/activities/${activity.id}/activity_executions`, requestOptions)
+
+        return fetch(`/activities/${activityId}/activity_executions`, requestOptions)
             .then(response => response.json())
     }
 
-    public update(activity: Activity, activityExecution: ActivityExectution): Promise<ActivityExectution> {
+    public update(activityId: number, activityExecution: ActivityExectution): Promise<ActivityExectution> {
         const requestOptions = {
             method: 'PUT',
             headers: this.getHeaders(),
             body: JSON.stringify(activityExecution)
 
         };
-        return fetch(`/activities/${activity.id}/activity_executions/${activityExecution.id}`, requestOptions)
+
+        return fetch(`/activities/${activityId}/activity_executions/${activityExecution.id}`, requestOptions)
             .then(response => response.json())
     }
 

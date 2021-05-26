@@ -7,7 +7,7 @@ export interface Activity {
 }
 
 export interface ActivityExectution {
-    name: string;
+    id: number;
     starts_at: Date;
     ends_at: Date;
     languages: Array<Language>;
@@ -15,11 +15,20 @@ export interface ActivityExectution {
 
 export class ActivityExecutionService {
     public getAll(activityId: number): Promise<Array<ActivityExectution>> {
-        return fetch(`/activities/${activityId}/activity_executions`, {
-            method: 'GET',
-            headers: this.getHeaders()
+       return fetch(`/activities/${activityId}/activity_executions`, {
+           method: 'GET',
+           headers: this.getHeaders()
         }).then(response => response.json())
-    }
+        .then(result => 
+            result.map(element => ({
+                id: element.id,
+                start: new Date(element.starts_at),
+                end: new Date(element.ends_at),
+                languages: element.languages,
+                overlap: true
+            }))
+        )
+    } 
 
     public create(activity: Activity, activityExecution: ActivityExectution): Promise<ActivityExectution> {
         const requestOptions = {
@@ -29,6 +38,17 @@ export class ActivityExecutionService {
 
         };
         return fetch(`/activities/${activity.id}/activity_executions`, requestOptions)
+            .then(response => response.json())
+    }
+
+    public update(activity: Activity, activityExecution: ActivityExectution): Promise<ActivityExectution> {
+        const requestOptions = {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(activityExecution)
+
+        };
+        return fetch(`/activities/${activity.id}/activity_executions/${activityExecution.id}`, requestOptions)
             .then(response => response.json())
     }
 

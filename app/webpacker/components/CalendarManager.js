@@ -15,11 +15,7 @@ import InfoSnackbar from './infoSnackbar';
 import ErrorSnackbar from './errorSnackbar';
 import LoadingBar from './loadingBar'
 
-import 'bootstrap/dist/css/bootstrap.css';
-import '@fullcalendar/bootstrap/main.css'
-import '@fullcalendar/common/main.css'
-import '@fullcalendar/timegrid/main.css'
-import '@fullcalendar/daygrid/main.css'
+import { ActivityExecutionService } from "../services/activity-execution-service";
 
 // define range of calendar view
 const START_DATE = '2021-05-20'
@@ -43,50 +39,17 @@ const styles = theme => ({
     color: '#2C3E50',
   }
 })
-// define some basic events which are being showed when starting up the application
-const INITIAL_EVENTS_STANDARD = [
-  {
-    id: 1,
-    title: 'Timed event',
-    start: new Date(todayStr + 'T09:00:00'),
-    end: new Date(todayStr + 'T10:00:00'),
-    overlap: true
-  },
-  {
-    id: 2,
-    title: 'Timed event 2',
-    start: new Date(todayStr + 'T13:00:00'),
-    end: new Date(todayStr + 'T15:00:00'),
-    overlap: true
-  }
-]
-const INITIAL_EVENTS_BLOCKING = [
-  {
-    id: 3,
-    title: "Welcome Event",
-    start: new Date(todayStr + 'T10:00:00'),
-    end: new Date(todayStr + 'T12:00:00'),
-    overlap: false,
-    rendering: 'background',
-    color: '#ff9f89'
-  }
-]
-const INITIAL_EVENTS = [...INITIAL_EVENTS_STANDARD, ...INITIAL_EVENTS_BLOCKING]
-
-function uuidv4() {
-  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-  );
-}
 
 class CalendarManager extends React.Component {
   constructor() {
     super()
 
     this.state = {
+      activityId: 0,
+      activityExecutionService: new ActivityExecutionService(),
       showEditor: false,    // flag to open editor
       selectInfo: null,     // fullcalendar selector
-      currentEvents: INITIAL_EVENTS,
+      currentEvents: [],
 
       loading: true,        // flag to trigger loading icon
       error: null,          // to trigger error banner
@@ -100,8 +63,12 @@ class CalendarManager extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({
-      loading: false,
+    this.state.activityExecutionService.getAll(this.props.activityId).then((result) => {
+      this.setState({
+        activityId: this.props.activityId,
+        currentEvents: result,
+        loading: false,
+      })
     })
   }
 
@@ -130,20 +97,23 @@ class CalendarManager extends React.Component {
     // if id given, update event otherwise create new one
     if(event.id) {
       // save extended attributes to event object 
-      this.state.selectInfo.event.setExtendedProp("language", event.language)
-      this.state.selectInfo.event.setExtendedProp("place", event.place)
-      this.state.selectInfo.event.setExtendedProp("amountParticipants", event.amountParticipants)
+      this.state.activityExecutionService.update(this.state.activityId, event).then(result => {
+        this.state.selectInfo.event.setExtendedProp("language", result.language)
+        this.state.selectInfo.event.setExtendedProp("place", result.place)
+        this.state.selectInfo.event.setExtendedProp("amountParticipants", result.amountParticipants)
 
-      // set base attributes to event object
-      this.state.selectInfo.event.setDates(event.start)
-      this.state.selectInfo.event.setEnd(event.end)
+        // set base attributes to event object
+        this.state.selectInfo.event.setDates(result.start)
+        this.state.selectInfo.event.setEnd(result.end)
 
-      this.state.selectInfo.event.setProp("overlap", event.overlap)
+        this.state.selectInfo.event.setProp("overlap", result.overlap)
+      })
     } 
     else {
-      event.id = uuidv4()
-      this.state.selectInfo.view.calendar.addEvent(event)
-    }
+      this.state.activityExecutionService.create(this.state.activityId, event).then(result => 
+        this.state.selectInfo.view.calendar.addEvent(result)
+      )
+    }    
 
     this.setState({
       showEditor: false,
@@ -177,12 +147,6 @@ class CalendarManager extends React.Component {
         showEditor: false
       })
     }
-  }
-
-  handleEvents = (events) => {
-    this.setState({
-      currentEvents: events
-    })
   }
 
   // function to render the event content within the calendar
@@ -291,30 +255,30 @@ class CalendarManager extends React.Component {
           }
 
           {/* display fullcalendar */ }
-          <FullCalendar
-            plugins={ [bootstrapPlugin, dayGridPlugin, timeGridPlugin, interactionPlugin] }
-            headerToolbar={ {
-              left: 'prev,next',
-              center: 'title',
-              right: 'timeGridWeek,timeGridDay'
-            } }
-            locale="DE"
-            themeSystem='bootstrap'
-            allDaySlot={ false }  // don't allow full day event
-            firstDay={ 1 }        // set first day of week to monday 1
-            validRange={ { start: START_DATE, end: END_DATE } }   // calendar is only available in given period
-            initialView='timeGridWeek'
-            editable={ true }
-            selectable={ true }
-            selectMirror={ true }
-            dayMaxEvents={ false } 
-            initialEvents={ this.state.currentEvents }
-            select={ this.handleDateSelect }
-            eventContent={ this.renderEventContent } // custom render function
-            eventClick={ this.handleEventClick }
-            eventsSet={ this.handleEvents } // called after events are initialized/added/changed/removed, save them to state
-            contentHeight="auto"
-          />
+
+            <FullCalendar
+              plugins={ [bootstrapPlugin, dayGridPlugin, timeGridPlugin, interactionPlugin] }
+              headerToolbar={ {
+                left: 'prev,next',
+                center: 'title',
+                right: 'timeGridWeek,timeGridDay'
+              } }
+              locale="DE"
+              themeSystem='bootstrap'
+              allDaySlot={ false }  // don't allow full day event
+              firstDay={ 1 }        // set first day of week to monday 1
+              validRange={ { start: START_DATE, end: END_DATE } }   // calendar is only available in given period
+              initialView='timeGridWeek'
+              editable={ true }
+              selectable={ true }
+              selectMirror={ true }
+              dayMaxEvents={ false } 
+              select={ this.handleDateSelect }
+              eventContent={ this.renderEventContent } // custom render function
+              eventClick={ this.handleEventClick }
+              events= { this.state.currentEvents }
+              contentHeight="auto"
+            />
         </div>
 
         { this.renderHelperElements() }

@@ -78,8 +78,7 @@ hr
 - if can?(:edit, @activity)
   hr
   .h4.mt-3 = t('activity.show.executions')
-  = react_component("HelloWorld", { activityId: @activity.id})
-
+  = react_component("CalendarManager", { activityId: @activity.id})
 
 
 hr.mt-4

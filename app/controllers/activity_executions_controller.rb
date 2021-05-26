@@ -55,6 +55,6 @@ class ActivityExecutionsController < ApplicationController
   # end
 
   def activity_execution_params
-    params.require(:activity_execution).permit(:from, :to, :activity_id)
+    jsonapi_parse(params, %i[start end languages])
   end
 end

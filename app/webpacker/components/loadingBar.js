@@ -3,7 +3,7 @@ import {
   withStyles,
   CircularProgress
 } from '@material-ui/core';
-import { compose } from 'recompose';
+import { compose } from 'react-recompose';
 
 const styles = theme => ({
     loadingBar: {

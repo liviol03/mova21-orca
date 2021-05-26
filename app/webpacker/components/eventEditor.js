@@ -15,7 +15,7 @@ import DeleteIcon from '@material-ui/icons/Delete'; // to-do: change icons to fo
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import ClearIcon from '@material-ui/icons/Clear';
 import CopyIcon from '@material-ui/icons/FileCopy'
-import { compose } from 'recompose';
+import { compose } from 'react-recompose';
 import moment from 'moment';
 import 'moment-timezone';
 

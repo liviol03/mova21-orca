@@ -1,5 +1,5 @@
 import React from 'react'
-import { compose } from 'recompose';
+import { compose } from 'react-recompose';
 import {
   Button,
   withStyles,
@@ -8,16 +8,18 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-
-import '@fullcalendar/core/main.css'
-import '@fullcalendar/common/main.css'
-import '@fullcalendar/timegrid/main.css'
-import '@fullcalendar/daygrid/main.css'
+import bootstrapPlugin from '@fullcalendar/bootstrap';
 
 import EventEditor from './eventEditor'
 import InfoSnackbar from './infoSnackbar';
 import ErrorSnackbar from './errorSnackbar';
 import LoadingBar from './loadingBar'
+
+import 'bootstrap/dist/css/bootstrap.css';
+import '@fullcalendar/bootstrap/main.css'
+import '@fullcalendar/common/main.css'
+import '@fullcalendar/timegrid/main.css'
+import '@fullcalendar/daygrid/main.css'
 
 // define range of calendar view
 const START_DATE = '2021-05-20'
@@ -76,7 +78,6 @@ function uuidv4() {
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
-
 
 class CalendarManager extends React.Component {
   constructor() {
@@ -274,10 +275,10 @@ class CalendarManager extends React.Component {
     const { classes } = this.props
 
     return (
-      <div className='calendar-manager'>
+      <div className='demo-app'>
         { this.renderSidebar() }
 
-        <div className='calendar-manager-main'>
+        <div className='demo-app-main'>
           { this.state.showEditor && (
             /* Show editor based on flag*/
             <EventEditor 
@@ -291,14 +292,14 @@ class CalendarManager extends React.Component {
 
           {/* display fullcalendar */ }
           <FullCalendar
-            plugins={ [dayGridPlugin, timeGridPlugin, interactionPlugin] }
+            plugins={ [bootstrapPlugin, dayGridPlugin, timeGridPlugin, interactionPlugin] }
             headerToolbar={ {
               left: 'prev,next',
               center: 'title',
               right: 'timeGridWeek,timeGridDay'
             } }
-            themeSystem="bootstrap"
             locale="DE"
+            themeSystem='bootstrap'
             allDaySlot={ false }  // don't allow full day event
             firstDay={ 1 }        // set first day of week to monday 1
             validRange={ { start: START_DATE, end: END_DATE } }   // calendar is only available in given period
@@ -312,6 +313,7 @@ class CalendarManager extends React.Component {
             eventContent={ this.renderEventContent } // custom render function
             eventClick={ this.handleEventClick }
             eventsSet={ this.handleEvents } // called after events are initialized/added/changed/removed, save them to state
+            contentHeight="auto"
           />
         </div>
 
@@ -321,6 +323,4 @@ class CalendarManager extends React.Component {
   }
 }
 
-export default compose(
-  withStyles(styles), 
-)(CalendarManager);
+export default CalendarManager;

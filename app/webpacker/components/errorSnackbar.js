@@ -6,7 +6,7 @@ import {
   IconButton,
 } from '@material-ui/core';
 import { Error as ErrorIcon, Close as CloseIcon } from '@material-ui/icons';
-import { compose, withState } from 'recompose';
+import { compose } from 'react-recompose';
 
 const styles = theme => ({
   snackbarContent: {

@@ -15,4 +15,9 @@ FactoryBot.create(:unit, title: 'Sommerlager Pfadistufe', stufe: Stufe.find_by(c
                   al: al, lagerleiter: lagerleiter)
 FactoryBot.create(:unit, title: 'Sommerlager Wolfsstufe', stufe: Stufe.find_by(code: :pfadi), abteilung: 'Pfadi H2O',
                   al: al, lagerleiter: lagerleiter)
-FactoryBot.create_list(:activity, 20)
+activities = FactoryBot.create_list(:activity, 20)
+activities.each do |activity|
+  FactoryBot.create_list(:activity_execution, 4, activity: activity)
+end
+
+

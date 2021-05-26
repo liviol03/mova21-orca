@@ -128,6 +128,7 @@ it:
       possible: möglich
       simo_text: 'Benötigt Sicherheitsmodul:'
       stufe_recommended: 'Geeignet für:'
+      executions: "Esecuzioni"
   app:
     title: Orca
   buttons:

@@ -1,37 +1,20 @@
 class ActivityExecutionsController < ApplicationController
   load_and_authorize_resource :activity
   load_and_authorize_resource through: :activity
-  # TODO
-  skip_before_action :verify_authenticity_token, only: [:create]
 
   def index
     render json: @activity_executions
   end
 
-  #
-  # def show; end
-  #
-  # def new
-  #   @activity_execution = ActivityExecution.new
-  # end
-  #
-  # def edit; end
-
   def create
-
-    # respond_to do |format|
-    #   format.json do
-    if @activity.activity_executions.create(activity_execution_params)
-      render json: { status: :success, acitivty_execution: acitivty_execution }
+    @activity_execution = @activity.activity_executions.create(activity_execution_params)
+    if @activity_execution
+      render json: { status: :success, activity_execution: @activity_execution }
     else
       render json: { status: :error }
     end
-    # end
-    # end
-
   end
 
-  #
   def update
     if @activity_execution.update(activity_execution_params)
       render json: { status: @activity_execution }

@@ -94,6 +94,7 @@ ActiveRecord::Schema.define(version: 2021_06_22_124902) do
     t.bigint "activity_id", null: false
     t.datetime "starts_at"
     t.datetime "ends_at"
+    t.integer "language_flags"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["activity_id"], name: "index_activity_executions_on_activity_id"

@@ -38,10 +38,10 @@ hr
     dd = @activity.participants_count_transport
 
     dt = t('activerecord.attributes.activity.languages')
-    dd 
+    dd
       ul
         - @activity.languages.select { |language, selected| selected }.keys.each do |language|
-          li= t("simple_form.options.activity.#{language}") 
+          li= t("simple_form.options.activity.#{language}")
 
     dt = t('activerecord.attributes.activity.block_type')
     dd = t(@activity.block_type || 'none', scope: 'simple_form.options.activity.block_type')
@@ -73,6 +73,13 @@ hr
       ul.list-group
         - @activity.activity_documents.each do |document|
           li.list-group-item = link_to document.filename, rails_blob_path(document, disposition: 'attachment')
+
+
+- if can?(:edit, @activity)
+  hr
+  .h4.mt-3 = t('activity.show.executions')
+  = react_component("HelloWorld", { activityId: @activity.id})
+
 
 
 hr.mt-4

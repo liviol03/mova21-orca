@@ -19,7 +19,7 @@ export class ActivityExecutionService {
            method: 'GET',
            headers: this.getHeaders()
         }).then(response => response.json())
-        .then(result => 
+        .then(result =>
             result.map(element => ({
                 id: element.id,
                 start: new Date(element.starts_at),
@@ -28,12 +28,12 @@ export class ActivityExecutionService {
                 overlap: true
             }))
         )
-    } 
+    }
 
     public create(activity: Activity, activityExecution: ActivityExectution): Promise<ActivityExectution> {
         const requestOptions = {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: this.getHeaders(),
             body: JSON.stringify(activityExecution)
 
         };
@@ -44,7 +44,7 @@ export class ActivityExecutionService {
     public update(activity: Activity, activityExecution: ActivityExectution): Promise<ActivityExectution> {
         const requestOptions = {
             method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
+            headers: this.getHeaders(),
             body: JSON.stringify(activityExecution)
 
         };

@@ -2,6 +2,7 @@ class ActivityExecutionsController < ApplicationController
   load_and_authorize_resource :activity
   load_and_authorize_resource through: :activity
 
+
   def index
     render json: @activity_executions
   end
@@ -9,25 +10,25 @@ class ActivityExecutionsController < ApplicationController
   def create
     @activity_execution = @activity.activity_executions.create(activity_execution_params)
     if @activity_execution
-      render json: { status: :success, activity_execution: @activity_execution }
+      render status: :ok, json: @activity_execution, serializer: AcitvityExecutionSerializer
     else
-      render json: { status: :error }
+      render status: :error
     end
   end
 
   def update
     if @activity_execution.update(activity_execution_params)
-      render json: { status: @activity_execution }
+      render status: :ok, json: @activity_execution, serializer: AcitvityExecutionSerializer
     else
-      render json: { status: :error }
+      render status: :error
     end
   end
 
   def destroy
     if @activity_execution.destroy
-      render json: { status: :success }
+      render status: :ok
     else
-      render json: { status: :error }
+      render status: :error
     end
   end
 

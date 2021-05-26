@@ -30,12 +30,18 @@ export class ActivityExecutionService {
         )
     }
 
-    public create(activityId: number, activityExecution: ActivityExectution): Promise<ActivityExectution> {
+    public create(activityId: number, activityExecution: any): Promise<ActivityExectution> {
+        console.log("post")
+        console.log(activityExecution)
         const requestOptions = {
             method: 'POST',
             headers: this.getHeaders(),
-            body: JSON.stringify(activityExecution)
-
+            body: JSON.stringify({
+                id: activityExecution.id,
+                starts_at: new Date(activityExecution.start),
+                ends_at: new Date(activityExecution.end),
+                languages: activityExecution.languages
+            })
         };
 
         return fetch(`/activities/${activityId}/activity_executions`, requestOptions)

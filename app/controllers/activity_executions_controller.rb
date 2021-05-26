@@ -56,6 +56,6 @@ class ActivityExecutionsController < ApplicationController
   # end
 
   def activity_execution_params
-    jsonapi_parse(params, %i[start end languages])
+    jsonapi_parse(params, %i[starts_at ends_at languages])
   end
 end

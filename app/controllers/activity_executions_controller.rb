@@ -26,7 +26,7 @@ class ActivityExecutionsController < ApplicationController
 
   def destroy
     if @activity_execution.destroy
-      render status: :ok
+      render status: :ok, json: { success: "true" }
     else
       render status: :error
     end

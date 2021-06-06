@@ -18,7 +18,7 @@ import InfoSnackbar from './infoSnackbar'
 import ErrorSnackbar from './errorSnackbar'
 import LoadingBar from './loadingBar'
 
-import { ActivityExecutionService } from "../services/activity-execution-service"
+import {ActivityExecutionService, Field} from "../services/activity-execution-service"
 
 // define range of calendar view
 const START_DATE = '2021-06-01'  //'2022-07-23'
@@ -36,6 +36,7 @@ class CalendarManager extends React.Component {
 
       event: null,                                  // working event
       events: [],                                   // fullcalendar source for events
+      spots: [],                                   //
       calendarRef: React.createRef(),               // reference to full calendar
 
       showEditor: false,    // flag to open editor
@@ -52,7 +53,7 @@ class CalendarManager extends React.Component {
   }
 
   componentDidMount() {
-    const { activityId, availableLanguages } = this.props
+    const { activityId, availableLanguages, spots } = this.props
 
     // todo: improve error handling
     this.state.activityExecutionService.getAll(this.props.activityId).then((result) => {
@@ -60,6 +61,7 @@ class CalendarManager extends React.Component {
         activityId: activityId,
         availableLanguages: availableLanguages,
         events: result,
+        spots: spots,
         loading: false,
       })
     })
@@ -92,20 +94,34 @@ class CalendarManager extends React.Component {
     })
   }
 
-  handleEventSave = (event) => {
+  convertFormEventToFullCalendarEvent = (selectedEvent) => ({
+    id: selectedEvent.id,
+    start: selectedEvent.start,
+    end: selectedEvent.end,
+    extendedProps: {
+      languages: selectedEvent.languages,
+      amountParticipants: selectedEvent.amountParticipants,
+      field: selectedEvent.field,
+      spot: selectedEvent.spot
+    },
+    overlap: selectedEvent.overlap
+  });
+
+  handleEventSave = (selectedEvent) => {
+    const event = this.convertFormEventToFullCalendarEvent(selectedEvent)
+
     const API = this.state.calendarRef.current.getApi()
 
     // if id given, update event otherwise create new one
     if(event.id) {
-<<<<<<< HEAD
       // todo: better error handling
-=======
-      // save extended attributes to event object
->>>>>>> fa98e6f (Add activity events)
       this.state.activityExecutionService.update(this.state.activityId, event).then(result => {
-        // save extended attributes to event object 
-        this.state.event.setExtendedProp("language_flags", result.language_flags)
+        // save extended attributes to event object
+
+        // TODO: avoid mutating the state
+        this.state.event.setExtendedProp("languages", result.languages)
         this.state.event.setExtendedProp("spot", result.spot)
+        this.state.event.setExtendedProp("field", result.field)
         this.state.event.setExtendedProp("amountParticipants", result.amountParticipants)
 
         // set base attributes to event object
@@ -120,16 +136,9 @@ class CalendarManager extends React.Component {
       })
     }
     else {
-<<<<<<< HEAD
       // todo: better error handling
       this.state.activityExecutionService.create(this.state.activityId, event).then(result => {
         API.addEvent(result)
-=======
-      this.state.activityExecutionService.create(this.state.activityId, event).then(result =>
-        this.state.selectInfo.view.calendar.addEvent(result)
-      )
-    }
->>>>>>> fa98e6f (Add activity events)
 
         this.setState({
           success: "Event successfully created",
@@ -212,192 +221,147 @@ class CalendarManager extends React.Component {
   // function to render the event content within the calendar
   renderEventContent(eventInfo) {
     return (
-      <>
-      <div>
-        {eventInfo.timeText && (
-          <p><b>{ eventInfo.timeText } </b></p>
-        )}
-      </div>
+        <>
+          <div>
+            {eventInfo.timeText && (
+                <p><b>{ eventInfo.timeText } </b></p>
+            )}
+          </div>
 
-      <ButtonGroup orientation="vertical">
-        <Button size="small" onClick={(evt) => this.handleEdit(evt, eventInfo.event.id)}><EditIcon/></Button>
-        <Button size="small" onClick={(evt) => this.handleEventCopy(evt, eventInfo.event.id)}><CopyIcon/></Button>
-        <Button size="small" onClick={(evt) => this.handleEventRemove(evt, eventInfo.event.id)}><DeleteIcon/></Button>
-      </ButtonGroup>
-    </>
+          <ButtonGroup orientation="vertical">
+            <Button size="small" onClick={(evt) => this.handleEdit(evt, eventInfo.event.id)}><EditIcon/></Button>
+            <Button size="small" onClick={(evt) => this.handleEventCopy(evt, eventInfo.event.id)}><CopyIcon/></Button>
+            <Button size="small" onClick={(evt) => this.handleEventRemove(evt, eventInfo.event.id)}><DeleteIcon/></Button>
+          </ButtonGroup>
+        </>
     )
   }
 
   // render top information div displaying current events
   renderSidebar() {
     return (
-      <div className='calendar-manager-sidebar'>
-        <div className='calendar-manager-sidebar-section'>
-          <h2>Date range</h2>
-          <p> Only dates can be seleceted between { START_DATE } - { END_DATE }</p>
+        <div className='calendar-manager-sidebar'>
+          <div className='calendar-manager-sidebar-section'>
+            <h2>Date range</h2>
+            <p> Only dates can be seleceted between { START_DATE } - { END_DATE }</p>
+          </div>
+          <div className='calendar-manager-sidebar-section'>
+            <h2>All Events ({ this.state.events.length })</h2>
+            <ul>
+              { this.state.events.map(this.renderSidebarEvent) }
+            </ul>
+          </div>
         </div>
-        <div className='calendar-manager-sidebar-section'>
-          <h2>All Events ({ this.state.events.length })</h2>
-          <ul>
-            { this.state.events.map(this.renderSidebarEvent) }
-          </ul>
-        </div>
-      </div>
     )
   }
 
   // render event information within top information div
   renderSidebarEvent(event) {
     return (
-      <li key={ event.id }>
-        <i>{event.title} - </i>
-        <b>
-          { event.start && (
-            this.convertToReadableTime(event.start)
-           )}
-        </b>
-        -
-        <b>
-           { event.end && (
-             this.convertToReadableTime(event.end)
-           )}
-        </b>
-        { event.extendedProps && (
-          <div>
-            <i>{ event.extendedProps.language_flags } - </i>
-            <i>{ event.extendedProps.amountParticipants } - </i>
-<<<<<<< HEAD
-            <i>{ event.extendedProps.spot }</i> 
-=======
-            <i>{ event.extendedProps.place }</i>
->>>>>>> fa98e6f (Add activity events)
-          </div>
-        )}
-      </li>
+        <li key={ event.id }>
+          <i>{event.title} - </i>
+          <b>
+            { event.start && (
+                this.convertToReadableTime(event.start)
+            )}
+          </b>
+          -
+          <b>
+            { event.end && (
+                this.convertToReadableTime(event.end)
+            )}
+          </b>
+          { event.extendedProps && (
+              <div>
+                <i>{ event.extendedProps.language_flags } - </i>
+                <i>{ event.extendedProps.amountParticipants } - </i>
+                <i>{ event.extendedProps.spot.name }</i>
+              </div>
+          )}
+        </li>
     )
   }
 
   renderHelperElements() {
     return (
-      <div>
-        {this.state.error && (
-          /* Show error bar based on flag*/
-          <ErrorSnackbar
-            onClose={() => this.setState({ error: null })}
-            message={ this.state.error.message }
-          />
-        )}
+        <div>
+          {this.state.error && (
+              /* Show error bar based on flag*/
+              <ErrorSnackbar
+                  onClose={() => this.setState({ error: null })}
+                  message={ this.state.error.message }
+              />
+          )}
 
-        {this.state.loading && (
-          /* Show loading based on flag*/
-          <LoadingBar/>
-        )}
+          {this.state.loading && (
+              /* Show loading based on flag*/
+              <LoadingBar/>
+          )}
 
-        {this.state.success && (
-          /* show info bar based on flag*/
-          <InfoSnackbar
-            onClose={() => this.setState({ success: null })}
-            message={ this.state.success }
-          />
-        )}
-      </div>
+          {this.state.success && (
+              /* show info bar based on flag*/
+              <InfoSnackbar
+                  onClose={() => this.setState({ success: null })}
+                  message={ this.state.success }
+              />
+          )}
+        </div>
     )
   }
 
   render() {
-<<<<<<< HEAD
-=======
-    const { classes } = this.props
-    console.log(this.props);
-
->>>>>>> fa98e6f (Add activity events)
     return (
-      <div className='calendar-manager'>
-        { this.renderSidebar() }
+        <div className='calendar-manager'>
+          { this.renderSidebar() }
 
-        <div className='calendar-manager-main' >
-          { this.state.showEditor && (
-            /* Show editor based on flag*/
-<<<<<<< HEAD
-            <EventEditor 
-              onSave={ this.handleEventSave } 
-              onDelete={ this.handleEventRemove } 
-              onClose={ this.handleOnClose } 
-              onCopy={ this.handleEventCopy } 
-              event={ this.state.event }
-              events={ this.state.events }
-              availableLanguages={ this.state.availableLanguages }
-            /> 
-          )}
+          <div className='calendar-manager-main' >
+            { this.state.showEditor && (
+                /* Show editor based on flag*/
+                <EventEditor
+                    onSave={ this.handleEventSave }
+                    onDelete={ this.handleEventRemove }
+                    onClose={ this.handleOnClose }
+                    onCopy={ this.handleEventCopy }
+                    event={ this.state.event }
+                    events={ this.state.events }
+                    availableLanguages={ this.state.availableLanguages }
+                    spots={ this.state.spots }
+                />
+            )}
 
-          {/* display fullcalendar */ }
-          {this.state.calendarRef && (
-            <FullCalendar
-              ref={ this.state.calendarRef }
-              plugins={ [bootstrapPlugin, dayGridPlugin, timeGridPlugin, interactionPlugin] }
-              headerToolbar={ {
-                left: 'prev,next',
-                center: 'title',
-                right: 'timeGridWeek,timeGridDay'
-              } }
-              locale="DE"
-              themeSystem='bootstrap'
-              allDaySlot={ false }                                  // don't allow full day event
-              firstDay={ 1 }                                        // set first day of week to monday 1
-              validRange={ { start: START_DATE, end: END_DATE } }   // calendar is only available in given period
-              initialView='timeGridWeek'
-              editable={ true }
-              selectable={ true }
-              selectMirror={ true }
-              dayMaxEvents={ false } 
-              eventContent={ this.renderEventContent }              // custom render function
-              eventClick={ this.handleEventClick }
-              eventResize={ this.handleEventResize }
-              eventDrop={ this.handleEventDrag }
-              events={ this.state.events }
-              select={ this.handleDateSelect }
-              contentHeight="auto"
-            />
-          )}
-=======
-            <EventEditor
-              onSave={ this.handleEventSave }
-              onDelete={ this.handleEventRemove }
-              onClose={ this.handleOnClose }
-              onCopy={ this.handleEventCopy }
-              selectInfo={this.state.selectInfo }/>
-            )
-          }
+            {/* display fullcalendar */ }
+            {this.state.calendarRef && (
+                <FullCalendar
+                    ref={ this.state.calendarRef }
+                    plugins={ [bootstrapPlugin, dayGridPlugin, timeGridPlugin, interactionPlugin] }
+                    headerToolbar={ {
+                      left: 'prev,next',
+                      center: 'title',
+                      right: 'timeGridWeek,timeGridDay'
+                    } }
+                    locale="DE"
+                    themeSystem='bootstrap'
+                    allDaySlot={ false }                                  // don't allow full day event
+                    firstDay={ 1 }                                        // set first day of week to monday 1
+                    validRange={ { start: START_DATE, end: END_DATE } }   // calendar is only available in given period
+                    initialView='timeGridWeek'
+                    editable={ true }
+                    selectable={ true }
+                    selectMirror={ true }
+                    dayMaxEvents={ false }
+                    eventContent={ this.renderEventContent }              // custom render function
+                    eventClick={ this.handleEventClick }
+                    eventResize={ this.handleEventResize }
+                    eventDrop={ this.handleEventDrag }
+                    events={ this.state.events }
+                    select={ this.handleDateSelect }
+                    contentHeight="auto"
+                />
+            )}
+          </div>
 
-          {/* display fullcalendar */ }
-          <FullCalendar
-            plugins={ [bootstrapPlugin, dayGridPlugin, timeGridPlugin, interactionPlugin] }
-            headerToolbar={ {
-              left: 'prev,next',
-              center: 'title',
-              right: 'timeGridWeek,timeGridDay'
-            } }
-            locale="DE"
-            themeSystem='bootstrap'
-            allDaySlot={ false }  // don't allow full day event
-            firstDay={ 1 }        // set first day of week to monday 1
-            validRange={ { start: START_DATE, end: END_DATE } }   // calendar is only available in given period
-            initialView='timeGridWeek'
-            editable={ true }
-            selectable={ true }
-            selectMirror={ true }
-            dayMaxEvents={ false }
-            select={ this.handleDateSelect }
-            eventContent={ this.renderEventContent } // custom render function
-            eventClick={ this.handleEventClick }
-            events={ this.state.currentEvents }
-            contentHeight="auto"
-          />
->>>>>>> fa98e6f (Add activity events)
+          { this.renderHelperElements() }
         </div>
-
-        { this.renderHelperElements() }
-      </div>
     )
   }
 }

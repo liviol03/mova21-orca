@@ -11,7 +11,20 @@ export interface ActivityExecution {
     id: number;
     starts_at: Date;
     ends_at: Date;
+    field: Field;
+    spot: Spot;
+    amount_participants: number;
     languages: Array<Language>;
+}
+
+export interface Field {
+    id: number;
+    name: string;
+}
+export interface Spot {
+    id: number;
+    name: string;
+    fields: Array<Field>
 }
 
 // fullcalendar definition of an event
@@ -19,7 +32,12 @@ export interface FullCalendarEvent {
     id: number;
     start: Date;
     end: Date;
-    languages: Array<Language>;
+    extendedProps: {
+        languages: Array<Language>;
+        amountParticipants: number;
+        field: Field,
+        spot: Spot
+    }
     overlap: boolean;
 }
 
@@ -39,7 +57,12 @@ export class ActivityExecutionService {
             id: activityExexution.id,
             start: new Date(activityExexution.starts_at),
             end: new Date(activityExexution.ends_at),
-            languages: activityExexution.languages,
+            extendedProps: {
+                languages: activityExexution.languages,
+                amountParticipants: activityExexution.amount_participants,
+                spot: activityExexution.spot,
+                field: activityExexution.field,
+            },
             overlap: true
         };
     }
@@ -61,7 +84,9 @@ export class ActivityExecutionService {
             activity_execution: {
                 starts_at: fullCalendarEvent.start,
                 ends_at: fullCalendarEvent.end,
-                languages: fullCalendarEvent.languages
+                languages: fullCalendarEvent.extendedProps.languages,
+                field_id: fullCalendarEvent.extendedProps.field.id,
+                amount_participants: fullCalendarEvent.extendedProps.amountParticipants
             }
         });
     }

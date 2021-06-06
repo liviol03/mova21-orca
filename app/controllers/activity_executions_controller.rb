@@ -34,7 +34,7 @@ class ActivityExecutionsController < ApplicationController
   private
 
   def activity_execution_params
-    params.require(:activity_execution).permit(:starts_at, :ends_at, languages: []).tap do |params|
+    params.require(:activity_execution).permit(:starts_at, :ends_at, :field_id, :spot_id, :amount_participants, languages: []).tap do |params|
       if params[:languages]
         params[:languages].each do |language|
           params["language_#{language}".to_sym] = true

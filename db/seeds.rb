@@ -20,4 +20,10 @@ activities.each do |activity|
   FactoryBot.create_list(:activity_execution, 4, activity: activity)
 end
 
-
+spots = Spot.create([{ name: "Lagerplatz" }, { name: "Flugplatz" }])
+Field.create([
+                        {name: "Feld 1-1", spot: spots.first },
+                        {name: "Feld 1-2", spot: spots.first },
+                        {name: "Feld 2-1", spot: spots.last },
+                        {name: "Feld 2-2", spot: spots.last }
+                      ])

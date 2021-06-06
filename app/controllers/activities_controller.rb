@@ -5,7 +5,9 @@ class ActivitiesController < ApplicationController
 
   def index; end
 
-  def show; end
+  def show
+    @spots = SpotBlueprint.render_as_hash Spot.all
+  end
 
   def new
     @activity = Activity.new

@@ -10,12 +10,17 @@ import {
   InputLabel, 
   Select,
   MenuItem,
+  FormControl,
+  Input,
+  Checkbox,
+  ListItemText
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete'; // to-do: change icons to fontawesome
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import ClearIcon from '@material-ui/icons/Clear';
 import CopyIcon from '@material-ui/icons/FileCopy'
 import { compose } from 'react-recompose';
+import { FullCalendarEvent } from "../services/activity-execution-service"
 import moment from 'moment';
 import 'moment-timezone';
 
@@ -42,8 +47,30 @@ const styles = theme => ({
     marginTop: theme.spacing(1)
   }
 });
-const places = ["", "Under de Brugg", "Ähned am Bergli"]
-const languages = ["", "German", "French", "Italian", "Schwitzerdütsch"]
+// todo
+// implement fields
+const spots = [
+  {
+    name: "Test",
+    id: 1,
+    fields: [
+      {
+        id: "",
+        name: ""
+      }
+    ]
+  },
+  {
+    name: "Test 2",
+    id: 2,
+    fields: [
+      {
+        id: "",
+        name: ""
+      }
+    ]
+  }
+]
 
 function convertDateToIso(date) {
   return moment(date).toISOString(true).substring(0, 16)
@@ -54,62 +81,60 @@ class EventEditor extends Component {
     super();
 
     this.state = {
-      calendar: null,
+      events: [],                     // all events
 
-      evnt: { 
+      evnt: {                         // current working event
           title: "", 
           start: "", 
           end: "", 
           allDay: false,
           amountParticipants: 0,
-          place: "",
-          language: "",
+          spot: "",
+          language_flags: [],
           overlap: true
       },
 
-      errorText: ""
+      availableLanguages: [],       // languages available for this activity execution
+      errorText: ""                 // error text which will be displayed on the form
     };
+
+    this.handleChange = this.handleChange.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleCopy = this.handleCopy.bind(this)
   }
 
   componentDidMount() {
-    const { selectInfo } = this.props
+    const { event, events, availableLanguages } = this.props
+    let editor_event = ""
     
-    // check if event is passed, if not a selection has been passed for a new event
-    if(selectInfo.event) {
+    // check if event or just time slot has been provided
+    if(event.id) {
       // event passsed
-      let event = selectInfo.event.toPlainObject()
+      editor_event = event.toPlainObject()
 
-      event.allDay = selectInfo.event.allDay
-      event.start = convertDateToIso(event.start)
-      event.end = convertDateToIso(event.end)
-      event.amountParticipants =  this.state.evnt.amountParticipants
-      event.place = this.state.evnt.place
-      event.language = this.state.evnt.language
-      event.overlap = this.state.evnt.overlap
+      editor_event.allDay = event.allDay
+      editor_event.start = convertDateToIso(event.start)
+      editor_event.end = convertDateToIso(event.end)
 
-      if(event.extendedProps) {
-        event.amountParticipants = event.extendedProps.amountParticipants || 0
-        event.place = event.extendedProps.place || ""
-        event.language = event.extendedProps.language || ""
-      }
-
-      this.setState({
-        calendar: selectInfo.view.calendar,
-        evnt: event
-      })
+      editor_event.amountParticipants = event.extendedProps.amountParticipants || this.state.evnt.amountParticipants
+      editor_event.spot = event.extendedProps.spot || this.state.evnt.spot
+      editor_event.language_flags = this.state.evnt.language_flags
+      
+      editor_event.overlap = this.state.evnt.overlap
     }
     else {
       // only date and time given
-      let event = this.state.evnt
-      event.start = convertDateToIso(selectInfo.start);
-      event.end = convertDateToIso(selectInfo.end);
-      event.allDay = selectInfo.allDay;
+      editor_event = this.state.evnt
+      editor_event.start = convertDateToIso(event.start);
+      editor_event.end = convertDateToIso(event.end);
+      editor_event.allDay = event.allDay;
+    } 
 
-      this.setState({
-        calendar: selectInfo.view.calendar,
-        evnt: event
-      })
-    }   
+    this.setState({
+      events: events,
+      evnt: editor_event,
+      availableLanguages: availableLanguages
+    })
   }
 
   isEventOverlapping(event1, event2) {
@@ -119,23 +144,30 @@ class EventEditor extends Component {
   
   // check if the new event is overlapping with a blocked one
   checkIfEventsOverLap(event) {
-    let blockingEvents = this.state.calendar.getEvents().filter(event => event.overlap === false)
+    let blockingEvents = this.state.events.filter(event => event.overlap === false)
     return blockingEvents.some(event => this.isEventOverlapping(event, blockingEvents))
   }
 
   handleChange = evt => {
     let event = this.state.evnt
-    event[evt.target.name] = evt.target.value
+
+    if(evt.target.name === 'languages') {
+      let languages = event[evt.target.name]
+      languages.push(evt.target.value)
+      event[evt.target.name] = languages
+    } else {
+      event[evt.target.name] = evt.target.value
+    }
 
     // check if the new event has a valid time period given, so that the start is not in front of the end time
     if(new Date(event.start) > new Date(event.end)) {
       this.setState({
-        errorText: "Der Endzeitpunkt kann nicht hinter dem Startzeitpunkt liegen"
+        errorText: "The end time can not be before the start time"
       })
     } else if(this.checkIfEventsOverLap(event)) {
       // check if new event is overlapping with a blocking event
       this.setState({
-        errorText: "Der Event überlagert mit einem blockierendem Event"
+        errorText: "The event is overlapping with a blocking event"
       })
     } else {
       this.setState({
@@ -160,7 +192,7 @@ class EventEditor extends Component {
     const { onCopy } = this.props
 
     // trigger parent function passed by props
-    onCopy(this.state.evnt)
+    onCopy("", this.state.evnt.id)
   }
 
   render() {
@@ -209,42 +241,49 @@ class EventEditor extends Component {
                 className={classes.inputField}
               />
       
-              <InputLabel id="labelInputPlace">Place</InputLabel>
+              <InputLabel id="labelInputSpot">Programspot</InputLabel>
               <Select
-                labelId="labelInputPlace"
-                id="inputPlace"
-                name="place"
-                value={this.state.evnt.place}
+                labelId="labelInputSpot"
+                id="inputspot"
+                name="spot"
+                value={this.state.evnt.spot}
                 onChange={this.handleChange}
                 autoWidth
               >
                 {
-                  places.map((place, i) => (
-                    <MenuItem key={`place-${i}`} value={place}><em>{place}</em></MenuItem>
+                  spots.map((spot, i) => (
+                    <MenuItem key={`spot-${i}`} value={spot.name}><em>{spot.name}</em></MenuItem>
                   ))
                 }
               </Select>
 
-              <InputLabel id="labelInputLanguage">Language</InputLabel>
-              <Select
-                labelId="labelInputLanguage"
-                id="inputLanguage"
-                name="language"
-                value={this.state.evnt.language}
-                onChange={this.handleChange}
-                autoWidth
-              >
-                {
-                  languages.map((language, i) => (
-                    <MenuItem key={`lang-${i}`} value={language}><em>{language}</em></MenuItem>
-                  ))
-                }
-              </Select>
+              <InputLabel id="labelInputLanguages">Languages</InputLabel>
+              <FormControl className={classes.formControl}>
+                <Select
+                  labelId="labelInputLanguages"
+                  id="inputLanguages"
+                  name="language_flags"
+                  value={this.state.evnt.languages}
+                  onChange={this.handleChange}
+                  autoWidth
+                  input={<Input />}
+                  renderValue={(selected) => selected.join(', ')}
+                >
+                  {
+                    this.state.availableLanguages.map((language, i) => (
+                      <MenuItem key={`lang-${i}`} value={language}>
+                        <Checkbox checked={this.state.evnt.language_flags.indexOf(language) > -1} />
+                        <ListItemText primary={language} />
+                      </MenuItem>
+                    ))
+                  }
+                </Select>
+              </FormControl>
             </CardContent>
             <CardActions>
               <Button size="small" color="primary" type="submit"><SaveAltIcon/>Save</Button>
               <Button size="small" onClick={this.handleCopy}><CopyIcon/>Copy</Button>
-              <Button size="small" onClick={onDelete}><DeleteIcon/>Delete</Button>
+              <Button size="small" onClick={(evt) => onDelete(evt, this.state.evnt.id)}><DeleteIcon/>Delete</Button>
               <Button size="small" onClick={onClose}><ClearIcon/>Cancel</Button>
             </CardActions>
           </form>

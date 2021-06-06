@@ -69,7 +69,7 @@ class CalendarManager extends React.Component {
   convertToReadableTime(datetime) {
     let date = datetime.toLocaleDateString(LOCAL)
     let time = datetime.toLocaleTimeString(LOCAL)
-  
+
     return [date, time].join(" ")
   }
 
@@ -97,7 +97,11 @@ class CalendarManager extends React.Component {
 
     // if id given, update event otherwise create new one
     if(event.id) {
+<<<<<<< HEAD
       // todo: better error handling
+=======
+      // save extended attributes to event object
+>>>>>>> fa98e6f (Add activity events)
       this.state.activityExecutionService.update(this.state.activityId, event).then(result => {
         // save extended attributes to event object 
         this.state.event.setExtendedProp("language_flags", result.language_flags)
@@ -114,11 +118,18 @@ class CalendarManager extends React.Component {
           showEditor: false,
         })
       })
-    } 
+    }
     else {
+<<<<<<< HEAD
       // todo: better error handling
       this.state.activityExecutionService.create(this.state.activityId, event).then(result => {
         API.addEvent(result)
+=======
+      this.state.activityExecutionService.create(this.state.activityId, event).then(result =>
+        this.state.selectInfo.view.calendar.addEvent(result)
+      )
+    }
+>>>>>>> fa98e6f (Add activity events)
 
         this.setState({
           success: "Event successfully created",
@@ -234,7 +245,7 @@ class CalendarManager extends React.Component {
       </div>
     )
   }
-  
+
   // render event information within top information div
   renderSidebarEvent(event) {
     return (
@@ -243,26 +254,30 @@ class CalendarManager extends React.Component {
         <b>
           { event.start && (
             this.convertToReadableTime(event.start)
-           )} 
+           )}
         </b>
-        - 
+        -
         <b>
            { event.end && (
              this.convertToReadableTime(event.end)
-           )}        
+           )}
         </b>
         { event.extendedProps && (
           <div>
             <i>{ event.extendedProps.language_flags } - </i>
             <i>{ event.extendedProps.amountParticipants } - </i>
+<<<<<<< HEAD
             <i>{ event.extendedProps.spot }</i> 
+=======
+            <i>{ event.extendedProps.place }</i>
+>>>>>>> fa98e6f (Add activity events)
           </div>
         )}
       </li>
     )
   }
 
-  renderHelperElements() {    
+  renderHelperElements() {
     return (
       <div>
         {this.state.error && (
@@ -290,6 +305,12 @@ class CalendarManager extends React.Component {
   }
 
   render() {
+<<<<<<< HEAD
+=======
+    const { classes } = this.props
+    console.log(this.props);
+
+>>>>>>> fa98e6f (Add activity events)
     return (
       <div className='calendar-manager'>
         { this.renderSidebar() }
@@ -297,6 +318,7 @@ class CalendarManager extends React.Component {
         <div className='calendar-manager-main' >
           { this.state.showEditor && (
             /* Show editor based on flag*/
+<<<<<<< HEAD
             <EventEditor 
               onSave={ this.handleEventSave } 
               onDelete={ this.handleEventRemove } 
@@ -337,6 +359,41 @@ class CalendarManager extends React.Component {
               contentHeight="auto"
             />
           )}
+=======
+            <EventEditor
+              onSave={ this.handleEventSave }
+              onDelete={ this.handleEventRemove }
+              onClose={ this.handleOnClose }
+              onCopy={ this.handleEventCopy }
+              selectInfo={this.state.selectInfo }/>
+            )
+          }
+
+          {/* display fullcalendar */ }
+          <FullCalendar
+            plugins={ [bootstrapPlugin, dayGridPlugin, timeGridPlugin, interactionPlugin] }
+            headerToolbar={ {
+              left: 'prev,next',
+              center: 'title',
+              right: 'timeGridWeek,timeGridDay'
+            } }
+            locale="DE"
+            themeSystem='bootstrap'
+            allDaySlot={ false }  // don't allow full day event
+            firstDay={ 1 }        // set first day of week to monday 1
+            validRange={ { start: START_DATE, end: END_DATE } }   // calendar is only available in given period
+            initialView='timeGridWeek'
+            editable={ true }
+            selectable={ true }
+            selectMirror={ true }
+            dayMaxEvents={ false }
+            select={ this.handleDateSelect }
+            eventContent={ this.renderEventContent } // custom render function
+            eventClick={ this.handleEventClick }
+            events={ this.state.currentEvents }
+            contentHeight="auto"
+          />
+>>>>>>> fa98e6f (Add activity events)
         </div>
 
         { this.renderHelperElements() }

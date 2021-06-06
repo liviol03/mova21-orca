@@ -1,0 +1,25 @@
+h1 = ActivityEvent.model_name.human
+
+.table-responsive
+  table.table
+    thead
+      tr
+        th = ActivityEvent.human_attribute_name(:title)
+        th = ActivityEvent.human_attribute_name(:starts_at)
+        th = ActivityEvent.human_attribute_name(:ends_at)
+        th
+        th
+
+    tbody
+      - @activity_events.each do |activity_event|
+        tr
+          td = activity_event.title
+          td = I18n.l(activity_event.starts_at, format: :short)
+          td = I18n.l(activity_event.ends_at)
+          td = link_to t('buttons.edit'), edit_admin_activity_event_path(activity_event)
+          td = link_to t('buttons.destroy'), admin_activity_event_path(activity_event), data: { confirm: 'Are you sure?' }, method: :delete
+
+br
+
+= link_to t('buttons.create'), new_admin_activity_event_path, class: 'btn btn-primary mb-3'
+

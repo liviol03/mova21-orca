@@ -33,6 +33,10 @@ de:
         stufe_recommended: Stufen Empfohlen
         stufen: Stufen möglich
         transport_location: Transport-Ort
+      activity_event:
+        title: Titel
+        starts_at: Beginnt um
+        ends_at: Endet um
       leader:
         birthdate: Geburtsdatum
         first_name: Vorname
@@ -98,6 +102,9 @@ de:
             lagerleiter:
               incomplete: ist unvollständig (Name, E-Mail, Adresse)
     models:
+      activity_event:
+        one: Groprogramm-Punkt
+        other: Groprogramm-Punkte
       leader:
         one: Leitperson
         other: Leitpersonen
@@ -128,6 +135,13 @@ de:
       simo_text: 'Benötigt Sicherheitsmodul:'
       stufe_recommended: 'Geeignet für:'
       executions: "Durchführungen"
+  activity_execution:
+    index:
+      title: Grobprogramm
+    new:
+      title: Neuen Programmpunkt erfassen
+    edit:
+      title: Programmpunkt editieren
   app:
     title: Orca
   buttons:
@@ -387,6 +401,7 @@ de:
     tag: Tags
     transport_location: Transport
     unit: Lager
+    activity_event: "Grobprogramm"
   number:
     currency:
       format:

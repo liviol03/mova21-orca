@@ -27,7 +27,7 @@ hr
     = "#{t('activity.show.simo_text')} #{t(@activity.simo, scope: 'simple_form.options.activity.simo')}"
 hr
 .mt-4
-    = markdown(@activity.description).html_safe
+  = markdown(@activity.description).html_safe
 
 hr
 
@@ -58,11 +58,11 @@ hr
     dd = @activity.activity_category&.full_label
 
 
-    / dt = t('activerecord.attributes.activity.location')
-    / dd = @activity.location
+/ dt = t('activerecord.attributes.activity.location')
+/ dd = @activity.location
 
-    / dt = t('activerecord.attributes.activity.transport_location')
-    / dd = @activity.transport_location
+/ dt = t('activerecord.attributes.activity.transport_location')
+/ dd = @activity.transport_location
 
 
 - if @activity.activity_documents.any?
@@ -78,7 +78,8 @@ hr
 - if can?(:edit, @activity)
   hr
   .h4.mt-3 = t('activity.show.executions')
-  = react_component("CalendarManager", { activityId: @activity.id, availableLanguages: @activity.languages})
+  = react_component("CalendarManager", { activityId: @activity.id, availableLanguages: @activity.languages,
+          activityEvents: ActivityEventBlueprint.render_as_hash(ActivityEvent.all) })
 
 
 hr.mt-4

@@ -65,6 +65,7 @@ class Ability
     can :manage, Tag
     can :manage, Stufe
     can :manage, TransportLocation
+    can :manage, ActivityEvent
     can :manage, ActivityCategory
     cannot :delete, ActivityCategory, parent_id: nil
   end

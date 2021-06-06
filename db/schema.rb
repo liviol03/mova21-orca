@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_22_124902) do
+ActiveRecord::Schema.define(version: 2021_06_06_142608) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -88,6 +88,14 @@ ActiveRecord::Schema.define(version: 2021_06_22_124902) do
     t.string "ancestry"
     t.string "code"
     t.index ["ancestry"], name: "index_activity_categories_on_ancestry"
+  end
+
+  create_table "activity_events", force: :cascade do |t|
+    t.jsonb "title", default: {}
+    t.datetime "starts_at"
+    t.datetime "ends_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "activity_executions", force: :cascade do |t|

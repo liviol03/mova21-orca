@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import {
   TextField,
   withStyles,
@@ -55,8 +55,12 @@ const spots = [
     id: 1,
     fields: [
       {
-        id: "",
-        name: ""
+        id: 1,
+        name: "Feld 1-1"
+      },
+      {
+        id: 2,
+        name: "Feld 1-2"
       }
     ]
   },
@@ -65,8 +69,12 @@ const spots = [
     id: 2,
     fields: [
       {
-        id: "",
-        name: ""
+        id: 1,
+        name: "Feld 2-1"
+      },
+      {
+        id: 2,
+        name: "Feld 2-2"
       }
     ]
   }
@@ -90,6 +98,7 @@ class EventEditor extends Component {
           allDay: false,
           amountParticipants: 0,
           spot: "",
+          field: "",
           language_flags: [],
           overlap: true
       },
@@ -197,6 +206,13 @@ class EventEditor extends Component {
 
   render() {
     const { classes, onClose, onDelete} = this.props;
+    let fields = []
+
+    // get fields for the selected spot
+    if(this.state.evnt.spot) {
+      const spot = spots.filter(spot => spot.name === this.state.evnt.spot)
+      fields = spot[0].fields
+    }
 
     return (
       <Modal
@@ -256,6 +272,26 @@ class EventEditor extends Component {
                   ))
                 }
               </Select>
+
+              { this.state.evnt.spot && (
+                <Fragment>
+                 <InputLabel id="labelInputField">Field</InputLabel>
+                 <Select
+                   labelId="labelInputField"
+                   id="inputfield"
+                   name="field"
+                   value={this.state.evnt.field}
+                   onChange={this.handleChange}
+                   autoWidth
+                 >
+                   {
+                     fields.map((field, i) => (
+                       <MenuItem key={`field-${i}`} value={field.name}><em>{field.name}</em></MenuItem>
+                     ))
+                   }
+                 </Select>
+                 </Fragment>
+              )}
 
               <InputLabel id="labelInputLanguages">Languages</InputLabel>
               <FormControl className={classes.formControl}>

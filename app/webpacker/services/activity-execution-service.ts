@@ -7,97 +7,75 @@ export interface Activity {
 }
 
 // backend definition of an activity execution
-export interface ActivityExectution {
+export interface ActivityExecution {
     id: number;
     starts_at: Date;
     ends_at: Date;
-    language_flags: Array<Language>;
+    languages: Array<Language>;
 }
 
-// fullcalendar definition of an event 
+// fullcalendar definition of an event
 export interface FullCalendarEvent {
     id: number;
     start: Date;
     end: Date;
-    language_flags: Array<Language>;
-    overlap: Boolean;
+    languages: Array<Language>;
+    overlap: boolean;
 }
 
 export class ActivityExecutionService {
     public getAll(activityId: number): Promise<Array<FullCalendarEvent>> {
-       return fetch(`/activities/${activityId}/activity_executions`, {
-           method: 'GET',
-           headers: this.getHeaders()
-        }).then(response => response.json())
-        .then(result => {
-            return result.map(element => ({
-                id: element.id,
-                start: new Date(element.starts_at),
-                end: new Date(element.ends_at),
-                language_flags: element.language_flags || [],
-                overlap: true
-            }))
+        return fetch(`/activities/${activityId}/activity_executions`, {
+            method: 'GET',
+            headers: this.getHeaders()
         })
+            .then(response => response.json())
+            .then((activityExexutions: Array<ActivityExecution>) =>
+                activityExexutions.map(activityExexution => this.convertToFullCalendarEvent(activityExexution)));
     }
 
-    public create(activityId: number, activityExecution: FullCalendarEvent): Promise<FullCalendarEvent> {
+    private convertToFullCalendarEvent(activityExexution: ActivityExecution): FullCalendarEvent {
+        return {
+            id: activityExexution.id,
+            start: new Date(activityExexution.starts_at),
+            end: new Date(activityExexution.ends_at),
+            languages: activityExexution.languages,
+            overlap: true
+        };
+    }
+
+    public create(activityId: number, fullCalendarEvent: FullCalendarEvent): Promise<FullCalendarEvent> {
         const requestOptions = {
             method: 'POST',
             headers: this.getHeaders(),
-            body: JSON.stringify({
-                "data": {
-                    "type": "activity_execution",
-                    "attributes": {
-                        starts_at: activityExecution.start,
-                        ends_at: activityExecution.end,
-                        language_flags: activityExecution.language_flags
-                    }
-                }
-            })
+            body: this.getActivityExecutionRequestBody(fullCalendarEvent)
         };
 
         return fetch(`/activities/${activityId}/activity_executions`, requestOptions)
             .then(response => response.json())
-            .then(element => {
-                let event: FullCalendarEvent = {
-                    id: element.id,
-                    start: new Date(element.starts_at),
-                    end: new Date(element.ends_at),
-                    language_flags: element.language_flags || [],
-                    overlap: true
-                }
-                return event
-            })
+            .then((activityExecution: ActivityExecution) => this.convertToFullCalendarEvent(activityExecution));
+    }
+
+    private getActivityExecutionRequestBody(fullCalendarEvent: FullCalendarEvent) {
+        return JSON.stringify({
+            activity_execution: {
+                starts_at: fullCalendarEvent.start,
+                ends_at: fullCalendarEvent.end,
+                languages: fullCalendarEvent.languages
+            }
+        });
     }
 
     public update(activityId: number, activityExecution: FullCalendarEvent): Promise<FullCalendarEvent> {
         const requestOptions = {
             method: 'PUT',
             headers: this.getHeaders(),
-            body: JSON.stringify({
-                "data": {
-                    "type": "activity_execution",
-                    "attributes": {
-                        starts_at: activityExecution.start,
-                        ends_at: activityExecution.end,
-                        language_flags: activityExecution.language_flags
-                    }
-                }
-            })
+            body: this.getActivityExecutionRequestBody(activityExecution)
         };
 
         return fetch(`/activities/${activityId}/activity_executions/${activityExecution.id}`, requestOptions)
             .then(response => response.json())
-            .then(element => {
-                let event: FullCalendarEvent = {
-                    id: element.id,
-                    start: new Date(element.starts_at),
-                    end: new Date(element.ends_at),
-                    language_flags: element.language_flags || [],
-                    overlap: true
-                }
-                return event
-            })
+            .then((activityExecution: ActivityExecution) => this.convertToFullCalendarEvent(activityExecution));
     }
 
     public delete(activityId: number, activityExecutionId: number): Promise<boolean> {
@@ -107,7 +85,7 @@ export class ActivityExecutionService {
         };
 
         return fetch(`/activities/${activityId}/activity_executions/${activityExecutionId}`, requestOptions)
-        .then(response => response.status === 200)
+            .then(response => response.status === 200)
     }
 
     private getHeaders(): { [key: string]: string } {

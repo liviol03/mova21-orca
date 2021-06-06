@@ -20,8 +20,4 @@ class ApplicationController < ActionController::Base
   def new_session_path(_scope)
     new_user_session_path
   end
-
-  def jsonapi_parse(params, whitelist)
-    ActiveModelSerializers::Deserialization.jsonapi_parse(params, only: whitelist)
-  end
 end

@@ -36,8 +36,8 @@ class ActivityExecutionsController < ApplicationController
   def activity_execution_params
     params.require(:activity_execution).permit(:starts_at, :ends_at, :field_id, :spot_id, :amount_participants, languages: []).tap do |params|
       if params[:languages]
-        params[:languages].each do |language|
-          params["language_#{language}".to_sym] = true
+        Activity::LANGUAGES.each do |language|
+          params[language] = params[:languages].include? language.to_s.sub('language_', '')
         end
         params.delete('languages')
       end

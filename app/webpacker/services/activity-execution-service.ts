@@ -7,12 +7,22 @@ export interface Activity {
 }
 
 // backend definition of an activity execution
-export interface ActivityExecution {
+interface ActivityExecutionRequest {
+    activity_execution: {
+        starts_at: Date;
+        ends_at: Date;
+        field_id: number;
+        amount_participants: number;
+        languages: Array<Language>;
+    }
+}
+
+interface ActivityExecution {
     id: number;
     starts_at: Date;
     ends_at: Date;
-    field: Field;
     spot: Spot;
+    field: Field;
     amount_participants: number;
     languages: Array<Language>;
 }
@@ -21,6 +31,7 @@ export interface Field {
     id: number;
     name: string;
 }
+
 export interface Spot {
     id: number;
     name: string;
@@ -80,7 +91,7 @@ export class ActivityExecutionService {
     }
 
     private getActivityExecutionRequestBody(fullCalendarEvent: FullCalendarEvent) {
-        return JSON.stringify({
+        const request: ActivityExecutionRequest = {
             activity_execution: {
                 starts_at: fullCalendarEvent.start,
                 ends_at: fullCalendarEvent.end,
@@ -88,7 +99,8 @@ export class ActivityExecutionService {
                 field_id: fullCalendarEvent.extendedProps.field.id,
                 amount_participants: fullCalendarEvent.extendedProps.amountParticipants
             }
-        });
+        };
+        return JSON.stringify(request);
     }
 
     public update(activityId: number, activityExecution: FullCalendarEvent): Promise<FullCalendarEvent> {

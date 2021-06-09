@@ -1,4 +1,4 @@
-import React, {Component, Fragment} from 'react';
+import React, { ChangeEvent, Component, Fragment } from 'react';
 import {
   TextField,
   withStyles,
@@ -21,7 +21,7 @@ import ClearIcon from '@material-ui/icons/Clear';
 import CopyIcon from '@material-ui/icons/FileCopy'
 import {compose} from 'react-recompose';
 import {FullCalendarEvent} from "../services/activity-execution-service"
-import moment from 'moment';
+import * as moment from 'moment';
 import 'moment-timezone';
 
 const styles = theme => ({
@@ -54,9 +54,12 @@ function convertDateToIso(date) {
   return moment(date).toISOString(true).substring(0, 16)
 }
 
-class EventEditor extends Component {
-  constructor() {
-    super();
+const defaultSpot = {  id: null, name: '', fields: []};
+const defaultField = { id: null, name: ''};
+
+class EventEditor extends Component<any, any> {
+  constructor(props: any) {
+    super(props);
 
     this.state = {
       events: [],                     // all events
@@ -69,8 +72,8 @@ class EventEditor extends Component {
         end: "",
         // TODO: handle case if field already selected (update)
         amountParticipants: 0,
-        spot: { id: null, name: '', fields: []},
-        field: { id: null, name: ''},
+        spot: defaultSpot,
+        field: defaultField,
         languages: [],
         allDay: false,
         overlap: true
@@ -92,8 +95,8 @@ class EventEditor extends Component {
       start: convertDateToIso(event.start),
       end: convertDateToIso(event.end),
       allDay: event.allDay,
-      languages: event.languages || availableLanguages,
-      ...event.extendedProps
+      ...event.extendedProps,
+      languages: event?.extendedProps?.languages || availableLanguages
     };
 
     this.setState({
@@ -150,7 +153,16 @@ class EventEditor extends Component {
     let newLanguages = index > -1 ?
       event.languages.filter(language => language !== evt.target.value) :
       [...event.languages, evt.target.value];
-    this.mutateSelectedEventState('languages', newLanguages)
+
+    this.setState({selectedEvent: this.mutateSelectedEventState('languages', newLanguages)});
+  }
+
+  handleSpotChange = (spot_id) => {
+    this.setState({selectedEvent: { ...this.mutateSelectedEventState('spot', this.state.availableSpots.find(spot => spot.id === spot_id)), field: defaultField }});
+  }
+
+  handleFieldChange = (field_id) => {
+    this.setState({selectedEvent: this.mutateSelectedEventState('field', this.state.selectedEvent.spot.fields.find(field => field.id === field_id))});
   }
 
   // function handling submit of form
@@ -221,13 +233,13 @@ class EventEditor extends Component {
                 labelId="labelInputSpot"
                 id="inputspot"
                 name="spot"
-                value={this.state.selectedEvent.spot}
-                onChange={this.handleChange}
+                value={this.state.selectedEvent.spot.id}
+                onChange={event => this.handleSpotChange(event.target.value)}
                 autoWidth
               >
                 {
                   this.state.availableSpots.map((spot, i) => (
-                    <MenuItem key={`spot-${i}`} value={spot}><em>{spot.name}</em></MenuItem>
+                    <MenuItem key={`spot-${i}`} value={spot.id}><em>{spot.name}</em></MenuItem>
                   ))
                 }
               </Select>
@@ -239,13 +251,13 @@ class EventEditor extends Component {
                     labelId="labelInputField"
                     id="inputfield"
                     name="field"
-                    onChange={this.handleChange}
-                    value={this.state.selectedEvent.field}
+                    onChange={event => this.handleFieldChange(event.target.value)}
+                    value={this.state.selectedEvent.field.id}
                     autoWidth
                   >
                     {
                       this.state.selectedEvent.spot.fields.map((field, i) => (
-                        <MenuItem key={`field-${i}`} value={field}><em>{field.name}</em></MenuItem>
+                        <MenuItem key={`field-${i}`} value={field.id}><em>{field.name}</em></MenuItem>
                       ))
                     }
                   </Select>
@@ -262,7 +274,7 @@ class EventEditor extends Component {
                   onChange={this.handleLanguageChange}
                   autoWidth
                   input={<Input/>}
-                  renderValue={(selected) => selected.join(', ')}
+                  renderValue={(selected: string[]) => selected.join(', ')}
                 >
                   {
                     this.state.availableLanguages.map((language, i) => (
@@ -290,5 +302,5 @@ class EventEditor extends Component {
 }
 
 export default compose(
-  withStyles(styles),
+  withStyles(styles as any),
 )(EventEditor);

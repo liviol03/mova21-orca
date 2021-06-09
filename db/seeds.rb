@@ -15,15 +15,25 @@ FactoryBot.create(:unit, title: 'Sommerlager Pfadistufe', stufe: Stufe.find_by(c
                   al: al, lagerleiter: lagerleiter)
 FactoryBot.create(:unit, title: 'Sommerlager Wolfsstufe', stufe: Stufe.find_by(code: :pfadi), abteilung: 'Pfadi H2O',
                   al: al, lagerleiter: lagerleiter)
+
+activity_1 = ActivityCategory.create(label_de: 'Ausflug', code: 'excursion')
+activity_2 = ActivityCategory.create(label_de: 'Aktivität', code: 'activity')
+activity_3 = ActivityCategory.create(label_de: 'Frohnarbeit', code: 'frohnarbeit')
+ActivityCategory.create([
+                          { label_de: 'Wasser', ancestry: activity_1 },
+                          { label_de: 'Berg', ancestry: activity_1 }
+                        ])
+
 activities = FactoryBot.create_list(:activity, 20)
-activities.each do |activity|
-  FactoryBot.create_list(:activity_execution, 4, activity: activity)
-end
 
 spots = Spot.create([{ name: "Lagerplatz" }, { name: "Flugplatz" }])
 Field.create([
-                        {name: "Feld 1-1", spot: spots.first },
-                        {name: "Feld 1-2", spot: spots.first },
-                        {name: "Feld 2-1", spot: spots.last },
-                        {name: "Feld 2-2", spot: spots.last }
-                      ])
+               { name: "Feld 1-1", spot: spots.first },
+               { name: "Feld 1-2", spot: spots.first },
+               { name: "Feld 2-1", spot: spots.last },
+               { name: "Feld 2-2", spot: spots.last }
+             ])
+
+activities.each do |activity|
+  FactoryBot.create_list(:activity_execution, 4, activity: activity, field: Field.all.sample)
+end

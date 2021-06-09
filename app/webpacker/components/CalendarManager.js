@@ -119,10 +119,10 @@ class CalendarManager extends React.Component {
         // save extended attributes to event object
 
         // TODO: avoid mutating the state
-        this.state.event.setExtendedProp("languages", result.languages)
-        this.state.event.setExtendedProp("spot", result.spot)
-        this.state.event.setExtendedProp("field", result.field)
-        this.state.event.setExtendedProp("amountParticipants", result.amountParticipants)
+        this.state.event.setExtendedProp("languages", result.extendedProps.languages)
+        this.state.event.setExtendedProp("spot", result.extendedProps.spot)
+        this.state.event.setExtendedProp("field", result.extendedProps.field)
+        this.state.event.setExtendedProp("amountParticipants", result.extendedProps.amountParticipants)
 
         // set base attributes to event object
         this.state.event.setDates(result.start)

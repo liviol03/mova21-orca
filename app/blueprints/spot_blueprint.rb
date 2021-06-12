@@ -1,7 +1,7 @@
 class SpotBlueprint < Blueprinter::Base
   identifier :id
 
-  fields :name
+  fields :name, :color
 
   association :fields, blueprint: FieldBlueprint
 end

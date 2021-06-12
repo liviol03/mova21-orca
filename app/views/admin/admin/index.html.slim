@@ -13,3 +13,6 @@
     - if can?(:create, ActivityCategory)
       li
         = link_to t('nav.activity_category'), admin_activity_categories_path
+    - if can?(:create, Spot)
+      li
+        = link_to t('nav.spots'), admin_spots_path

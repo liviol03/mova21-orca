@@ -1,0 +1,20 @@
+h1
+  => Field.model_name.human
+  | -
+  =< @spot.name
+
+.table-responsive
+  table.table
+    thead
+      tr
+        th = Field.human_attribute_name(:name)
+        th = Field.human_attribute_name(:fields)
+        th
+    tbody
+      - @fields.each do |field|
+        tr
+          td = field.name
+          td = link_to t('buttons.edit'), edit_admin_spot_field_path(@spot, field)
+          td = link_to t('buttons.destroy'), admin_spot_field_path(@spot, field), data: { confirm: 'Are you sure?' }, method: :delete
+
+= link_to t('buttons.create'), new_admin_spot_field_path(@spot), class: 'btn btn-primary mb-3'

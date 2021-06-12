@@ -25,6 +25,9 @@ Rails.application.routes.draw do
 
   namespace :admin do
     get '/', to: 'admin#index'
+    resources :spots do
+      resources :fields
+    end
     resources :transport_locations
     resources :activity_categories
     resources :activity_events, except: %i[show]

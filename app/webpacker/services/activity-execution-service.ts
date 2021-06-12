@@ -35,6 +35,7 @@ export interface Field {
 export interface Spot {
     id: number;
     name: string;
+    color: string;
     fields: Array<Field>
 }
 

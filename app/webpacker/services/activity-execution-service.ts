@@ -14,6 +14,7 @@ interface ActivityExecutionRequest {
         field_id: number;
         amount_participants: number;
         languages: Array<Language>;
+        hasTransport: boolean
     }
 }
 
@@ -25,6 +26,7 @@ interface ActivityExecution {
     field: Field;
     amount_participants: number;
     languages: Array<Language>;
+    hasTransport: boolean
 }
 
 export interface Field {
@@ -48,9 +50,11 @@ export interface FullCalendarEvent {
         languages: Array<Language>;
         amountParticipants: number;
         field: Field,
-        spot: Spot
+        spot: Spot,
+        hasTransport: boolean
     }
     overlap: boolean;
+    color: string;
 }
 
 export class ActivityExecutionService {
@@ -74,8 +78,10 @@ export class ActivityExecutionService {
                 amountParticipants: activityExexution.amount_participants,
                 spot: activityExexution.spot,
                 field: activityExexution.field,
+                hasTransport: activityExexution.hasTransport
             },
-            overlap: true
+            overlap: true,
+            color: activityExexution.spot.color
         };
     }
 
@@ -98,7 +104,8 @@ export class ActivityExecutionService {
                 ends_at: fullCalendarEvent.end,
                 languages: fullCalendarEvent.extendedProps.languages,
                 field_id: fullCalendarEvent.extendedProps.field.id,
-                amount_participants: fullCalendarEvent.extendedProps.amountParticipants
+                amount_participants: fullCalendarEvent.extendedProps.amountParticipants,
+                hasTransport: fullCalendarEvent.extendedProps.hasTransport
             }
         };
         return JSON.stringify(request);

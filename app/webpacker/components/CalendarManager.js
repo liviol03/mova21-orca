@@ -1,4 +1,8 @@
 import React from 'react'
+import {
+  withStyles,
+} from '@material-ui/core';
+import {compose} from 'react-recompose';
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -21,9 +25,15 @@ import LoadingBar from './loadingBar'
 import {ActivityExecutionService, Field} from "../services/activity-execution-service"
 
 // define range of calendar view
-const START_DATE = '2021-06-01'  //'2022-07-23'
-const END_DATE = '2021-06-14' // '2022-08-07' // end date + 1
+const START_DATE = '2022-07-23'
+const END_DATE = '2022-08-07' // end date + 1
 const LOCAL = "DE"
+
+const styles = theme => ({
+  eventContent: {
+    height: "100%"
+  },
+})
 
 class CalendarManager extends React.Component {
   constructor() {
@@ -36,7 +46,7 @@ class CalendarManager extends React.Component {
 
       event: null,                                  // working event
       events: [],                                   // fullcalendar source for events
-      spots: [],                                   //
+      spots: [],                                    // spots including available fields
       calendarRef: React.createRef(),               // reference to full calendar
 
       showEditor: false,    // flag to open editor
@@ -48,7 +58,7 @@ class CalendarManager extends React.Component {
     this.handleOnClose = this.handleOnClose.bind(this)
     this.handleEventRemove = this.handleEventRemove.bind(this)
     this.handleEventCopy = this.handleEventCopy.bind(this)
-    this.renderSidebarEvent = this.renderSidebarEvent.bind(this)
+    this.renderSumEvent = this.renderSumEvent.bind(this)
     this.renderEventContent = this.renderEventContent.bind(this)
   }
 
@@ -109,7 +119,6 @@ class CalendarManager extends React.Component {
 
   handleEventSave = (selectedEvent) => {
     const event = this.convertFormEventToFullCalendarEvent(selectedEvent)
-
     const API = this.state.calendarRef.current.getApi()
 
     // if id given, update event otherwise create new one
@@ -123,8 +132,10 @@ class CalendarManager extends React.Component {
         this.state.event.setExtendedProp("spot", result.extendedProps.spot)
         this.state.event.setExtendedProp("field", result.extendedProps.field)
         this.state.event.setExtendedProp("amountParticipants", result.extendedProps.amountParticipants)
+        this.state.event.setExtendedProp("hasTransport", result.extendedProps.hasTransport)
 
         // set base attributes to event object
+        this.state.event.setProp("backgroundColor", result.color)
         this.state.event.setDates(result.start)
         this.state.event.setEnd(result.end)
         this.state.event.setProp("overlap", result.overlap)
@@ -220,19 +231,22 @@ class CalendarManager extends React.Component {
 
   // function to render the event content within the calendar
   renderEventContent(eventInfo) {
+    const { classes } = this.props
+    
     return (
         <>
-          <div>
+          <div title={ eventInfo.timeText } className={ classes.eventContent }>
             {eventInfo.timeText && (
-                <p><b>{ eventInfo.timeText } </b></p>
+                <span><b>{ eventInfo.timeText } </b></span>
             )}
-          </div>
 
-          <ButtonGroup orientation="vertical">
+          <ButtonGroup>
             <Button size="small" onClick={(evt) => this.handleEdit(evt, eventInfo.event.id)}><EditIcon/></Button>
             <Button size="small" onClick={(evt) => this.handleEventCopy(evt, eventInfo.event.id)}><CopyIcon/></Button>
             <Button size="small" onClick={(evt) => this.handleEventRemove(evt, eventInfo.event.id)}><DeleteIcon/></Button>
           </ButtonGroup>
+
+          </div>
         </>
     )
   }
@@ -248,7 +262,7 @@ class CalendarManager extends React.Component {
           <div className='calendar-manager-sidebar-section'>
             <h2>All Events ({ this.state.events.length })</h2>
             <ul>
-              { this.state.events.map(this.renderSidebarEvent) }
+              { this.state.events.map(this.renderSumEvent) }
             </ul>
           </div>
         </div>
@@ -256,10 +270,10 @@ class CalendarManager extends React.Component {
   }
 
   // render event information within top information div
-  renderSidebarEvent(event) {
+  renderSumEvent(event) {
     return (
         <li key={ event.id }>
-          <i>{event.title} - </i>
+          <i>{ event.title } - </i>
           <b>
             { event.start && (
                 this.convertToReadableTime(event.start)
@@ -288,7 +302,7 @@ class CalendarManager extends React.Component {
           {this.state.error && (
               /* Show error bar based on flag*/
               <ErrorSnackbar
-                  onClose={() => this.setState({ error: null })}
+                  onClose={ () => this.setState({ error: null }) }
                   message={ this.state.error.message }
               />
           )}
@@ -301,7 +315,7 @@ class CalendarManager extends React.Component {
           {this.state.success && (
               /* show info bar based on flag*/
               <InfoSnackbar
-                  onClose={() => this.setState({ success: null })}
+                  onClose={ () => this.setState({ success: null }) }
                   message={ this.state.success }
               />
           )}
@@ -366,4 +380,6 @@ class CalendarManager extends React.Component {
   }
 }
 
-export default CalendarManager
+export default compose(
+  withStyles(styles),
+)(CalendarManager);

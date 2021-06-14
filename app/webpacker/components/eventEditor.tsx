@@ -13,7 +13,8 @@ import {
   FormControl,
   Input,
   Checkbox,
-  ListItemText
+  ListItemText,
+  FormHelperText,
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete'; // to-do: change icons to fontawesome
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
@@ -48,14 +49,12 @@ const styles = theme => ({
   }
 });
 
-// todo
-
 function convertDateToIso(date) {
   return moment(date).toISOString(true).substring(0, 16)
 }
 
-const defaultSpot = {  id: null, name: '', fields: []};
-const defaultField = { id: null, name: ''};
+const defaultSpot = { id: null, name: '', fields: [] };
+const defaultField = { id: null, name: '' };
 
 class EventEditor extends Component<any, any> {
   constructor(props: any) {
@@ -79,6 +78,7 @@ class EventEditor extends Component<any, any> {
         overlap: true
       },
       availableLanguages: [],       // languages available for this activity execution
+
       errorText: ""                 // error text which will be displayed on the form
     };
 
@@ -88,7 +88,7 @@ class EventEditor extends Component<any, any> {
 
   componentDidMount() {
     const {event, events, availableLanguages, spots} = this.props
-    console.log(event);
+
     let selectedEvent = {
       ...this.state.selectedEvent,
       id: event.id,
@@ -123,6 +123,7 @@ class EventEditor extends Component<any, any> {
       ...this.state.selectedEvent,
       ...this.mutateSelectedEventState(evt.target.name, evt.target.value)
     };
+
     // check if the new event has a valid time period given, so that the start is not in front of the end time
     if (new Date(newSelectedEventState.start) > new Date(newSelectedEventState.end)) {
       this.setState({
@@ -147,28 +148,26 @@ class EventEditor extends Component<any, any> {
     return {...this.state.selectedEvent, ...newState };
   }
 
-  handleLanguageChange = evt => {
-    let event = this.state.selectedEvent;
-    const index = event.languages.indexOf(evt.target.value)
-    let newLanguages = index > -1 ?
-      event.languages.filter(language => language !== evt.target.value) :
-      [...event.languages, evt.target.value];
+  handleSpotChange = evt => {
+    let spot_id = evt.target.value
 
-    this.setState({selectedEvent: this.mutateSelectedEventState('languages', newLanguages)});
+    this.setState({
+      selectedEvent: { ...this.mutateSelectedEventState('spot', this.state.availableSpots.find(spot => spot.id === spot_id)), field: defaultField }
+    });
   }
 
-  handleSpotChange = (spot_id) => {
-    this.setState({selectedEvent: { ...this.mutateSelectedEventState('spot', this.state.availableSpots.find(spot => spot.id === spot_id)), field: defaultField }});
-  }
+  handleFieldChange = evt => {
+    let field_id = evt.target.value
 
-  handleFieldChange = (field_id) => {
-    this.setState({selectedEvent: this.mutateSelectedEventState('field', this.state.selectedEvent.spot.fields.find(field => field.id === field_id))});
+    this.setState({
+      selectedEvent: this.mutateSelectedEventState('field', this.state.selectedEvent.spot.fields.find(field => field.id === field_id))
+    });
   }
 
   // function handling submit of form
   handleSubmit = evt => {
     evt.preventDefault();
-    const {onSave} = this.props
+    const { onSave } = this.props
     let selectedEvent = this.state.selectedEvent
 
     // trigger parent function passed by props
@@ -177,31 +176,32 @@ class EventEditor extends Component<any, any> {
 
   // handling copy of event
   handleCopy = evt => {
-    const {onCopy} = this.props
+    const { onCopy } = this.props
 
     // trigger parent function passed by props
     onCopy("", this.state.selectedEvent.id)
   }
 
   render() {
-    const {classes, onClose, onDelete} = this.props;
+    const { classes, onClose, onDelete } = this.props;
+    const LINK_TO_ADMIN_PANEL = window.origin + "/admin/spots"
 
     return (
       <Modal
-        className={classes.modal}
-        onClose={onClose}
+        className={ classes.modal }
+        onClose={ onClose }
         open
       >
-        <Card className={classes.modalCard}>
-          <form onSubmit={this.handleSubmit}>
-            <CardContent className={classes.modalCardContent}>
+        <Card className={ classes.modalCard }>
+          <form onSubmit={ this.handleSubmit }>
+            <CardContent className={ classes.modalCardContent }>
               <TextField
                 key="inputStartTime"
                 name="start"
                 label="Start time"
                 type="datetime-local"
-                value={this.state.selectedEvent.start}
-                className={classes.inputField}
+                value={ this.state.selectedEvent.start }
+                className={ classes.inputField }
               />
 
               <TextField
@@ -209,11 +209,11 @@ class EventEditor extends Component<any, any> {
                 name="end"
                 label="End time"
                 type="datetime-local"
-                value={this.state.selectedEvent.end}
-                onChange={this.handleChange}
-                error={this.state.errorText.length === 0 ? false : true}
-                helperText={this.state.errorText}
-                className={classes.inputField}
+                value={ this.state.selectedEvent.end }
+                onChange={ this.handleChange }
+                error={ this.state.errorText.length === 0 ? false : true }
+                helperText={ this.state.errorText }
+                className={ classes.inputField }
               />
 
               <TextField
@@ -223,9 +223,9 @@ class EventEditor extends Component<any, any> {
                 name="amountParticipants"
                 placeholder="100"
                 label="Amount Participants"
-                value={this.state.selectedEvent.amountParticipants}
-                onChange={this.handleChange}
-                className={classes.inputField}
+                value={ this.state.selectedEvent.amountParticipants }
+                onChange={ this.handleChange }
+                className={ classes.inputField }
               />
 
               <InputLabel id="labelInputSpot">Programspot</InputLabel>
@@ -233,13 +233,13 @@ class EventEditor extends Component<any, any> {
                 labelId="labelInputSpot"
                 id="inputspot"
                 name="spot"
-                value={this.state.selectedEvent.spot.id}
-                onChange={event => this.handleSpotChange(event.target.value)}
+                value={ this.state.selectedEvent.spot.id }
+                onChange={ this.handleSpotChange }
                 autoWidth
               >
                 {
                   this.state.availableSpots.map((spot, i) => (
-                    <MenuItem key={`spot-${i}`} value={spot.id}><em>{spot.name}</em></MenuItem>
+                    <MenuItem key={ `spot-${i}`} value={spot.id}><em>{spot.name }</em></MenuItem>
                   ))
                 }
               </Select>
@@ -251,36 +251,38 @@ class EventEditor extends Component<any, any> {
                     labelId="labelInputField"
                     id="inputfield"
                     name="field"
-                    onChange={event => this.handleFieldChange(event.target.value)}
-                    value={this.state.selectedEvent.field.id}
+                    onChange={ this.handleFieldChange }
+                    value={ this.state.selectedEvent.field.id }
                     autoWidth
                   >
                     {
                       this.state.selectedEvent.spot.fields.map((field, i) => (
-                        <MenuItem key={`field-${i}`} value={field.id}><em>{field.name}</em></MenuItem>
+                        <MenuItem key={ `field-${ i }` } value={ field.id }><em>{ field.name }</em></MenuItem>
                       ))
                     }
                   </Select>
                 </Fragment>
               )}
+              <FormHelperText id="helpertext-labelInputField">To manage the spots plesae use the <a href={ LINK_TO_ADMIN_PANEL }>Admin Panel</a></FormHelperText>
 
-              <InputLabel id="labelInputLanguages">Languages</InputLabel>
-              <FormControl className={classes.formControl}>
+              <FormControl className={ classes.formControl }>
+                <InputLabel id="labelInputLanguages">Languages</InputLabel>
                 <Select
                   labelId="labelInputLanguages"
                   id="inputLanguages"
                   name="languages"
-                  value={this.state.selectedEvent.languages}
-                  onChange={this.handleLanguageChange}
+                  multiple
+                  value={ this.state.selectedEvent.languages }
+                  onChange={ this.handleChange }
                   autoWidth
-                  input={<Input/>}
-                  renderValue={(selected: string[]) => selected.join(', ')}
+                  input={ <Input/> }
+                  renderValue={ (selected: string[]) => selected.join(', ') }
                 >
                   {
                     this.state.availableLanguages.map((language, i) => (
-                      <MenuItem key={`lang-${i}`} value={language}>
-                        <Checkbox checked={this.state.selectedEvent.languages.indexOf(language) > -1}/>
-                        <ListItemText primary={language}/>
+                      <MenuItem key={ `lang-${ i }`} value={ language }>
+                        <Checkbox checked={ this.state.selectedEvent.languages.indexOf(language) > -1 }/>
+                        <ListItemText primary={ language }/>
                       </MenuItem>
                     ))
                   }
@@ -289,10 +291,10 @@ class EventEditor extends Component<any, any> {
             </CardContent>
             <CardActions>
               <Button size="small" color="primary" type="submit"><SaveAltIcon/>Save</Button>
-              <Button size="small" onClick={this.handleCopy}><CopyIcon/>Copy</Button>
+              <Button size="small" onClick={ this.handleCopy }><CopyIcon/>Copy</Button>
               <Button size="small"
-                      onClick={(evt) => onDelete(evt, this.state.selectedEvent.id)}><DeleteIcon/>Delete</Button>
-              <Button size="small" onClick={onClose}><ClearIcon/>Cancel</Button>
+                      onClick={ (evt) => onDelete(evt, this.state.selectedEvent.id) }><DeleteIcon/>Delete</Button>
+              <Button size="small" onClick={ onClose }><ClearIcon/>Cancel</Button>
             </CardActions>
           </form>
         </Card>

@@ -1,21 +1,18 @@
 import React from 'react'
-import {
-  withStyles,
-} from '@material-ui/core';
 import {compose} from 'react-recompose';
+import {
+  Menu,
+  MenuItem,
+  withStyles
+} from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete'
+import CopyIcon from '@material-ui/icons/FileCopy'
+import EditIcon from '@material-ui/icons/Edit'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import bootstrapPlugin from '@fullcalendar/bootstrap'
-
-import DeleteIcon from '@material-ui/icons/Delete'
-import CopyIcon from '@material-ui/icons/FileCopy'
-import EditIcon from '@material-ui/icons/Edit'
-import {
-  Button,
-  ButtonGroup
-} from '@material-ui/core'
 
 import EventEditor from './eventEditor'
 import InfoSnackbar from './infoSnackbar'
@@ -53,6 +50,8 @@ class CalendarManager extends React.Component {
       loading: true,        // flag to trigger loading icon
       error: null,          // to trigger error banner
       success: null,        // to trigger success banner
+      mouseX: null,         // position of context menu
+      mouseY: null          // position of context menu
     }
 
     this.handleOnClose = this.handleOnClose.bind(this)
@@ -60,6 +59,8 @@ class CalendarManager extends React.Component {
     this.handleEventCopy = this.handleEventCopy.bind(this)
     this.renderSumEvent = this.renderSumEvent.bind(this)
     this.renderEventContent = this.renderEventContent.bind(this)
+    this.handleContextMenuClick = this.handleContextMenuClick.bind(this)
+    this.handlContextMenuClose = this.handlContextMenuClose.bind(this)
   }
 
   componentDidMount() {
@@ -86,6 +87,7 @@ class CalendarManager extends React.Component {
   }
 
   handleOnClose() {
+    this.handlContextMenuClose()
     this.setState({
       showEditor: false
     })
@@ -168,6 +170,7 @@ class CalendarManager extends React.Component {
       this.state.activityExecutionService.create(this.state.activityId, event).then(result => {
         API.addEvent(result)
 
+        this.handlContextMenuClose()
         this.setState({
           success: "Event successfully copied",
           showEditor: false,
@@ -198,11 +201,13 @@ class CalendarManager extends React.Component {
           if(success) {
             event.remove()
 
+            this.handlContextMenuClose()
             this.setState({
               showEditor: false,
               success: "Event successfully removed"
             })
           } else {
+            this.handlContextMenuClose()
             this.setState({
               showEditor: false,
               error: "Could not delete event execution"
@@ -229,23 +234,52 @@ class CalendarManager extends React.Component {
     })
   }
 
+  handleContextMenuClick = (event) => {
+    event.preventDefault();
+
+    this.setState({
+      mouseX: event.clientX - 2,
+      mouseY: event.clientY - 4,
+    });
+  };
+
+  handlContextMenuClose = () => {
+    this.setState({
+      mouseX: null,
+      mouseY: null
+    })
+  };
+
   // function to render the event content within the calendar
   renderEventContent(eventInfo) {
     const { classes } = this.props
     
     return (
         <>
-          <div title={ eventInfo.timeText } className={ classes.eventContent }>
+          <div  title={ eventInfo.timeText } 
+                className={ classes.eventContent } 
+                onContextMenu={ this.handleContextMenuClick } 
+                style={{ cursor: 'context-menu' }}
+          >
             {eventInfo.timeText && (
                 <span><b>{ eventInfo.timeText } </b></span>
             )}
 
-          <ButtonGroup>
-            <Button size="small" onClick={(evt) => this.handleEdit(evt, eventInfo.event.id)}><EditIcon/></Button>
-            <Button size="small" onClick={(evt) => this.handleEventCopy(evt, eventInfo.event.id)}><CopyIcon/></Button>
-            <Button size="small" onClick={(evt) => this.handleEventRemove(evt, eventInfo.event.id)}><DeleteIcon/></Button>
-          </ButtonGroup>
-
+            <Menu
+              keepMounted
+              open={ this.state.mouseY !== null }
+              onClose={ this.handlContextMenuClose }
+              anchorReference="anchorPosition"
+              anchorPosition={
+                this.state.mouseY !== null && this.state.mouseX !== null
+                  ? { top: this.state.mouseY, left: this.state.mouseX }
+                  : undefined
+              }
+            >
+              <MenuItem onClick={ (evt) => this.handleEdit(evt, eventInfo.event.id) }><EditIcon/>Edit</MenuItem>
+              <MenuItem onClick={ (evt) => this.handleEventCopy(evt, eventInfo.event.id) }><CopyIcon/>Copy</MenuItem>
+              <MenuItem size="small" onClick={ (evt) => this.handleEventRemove(evt, eventInfo.event.id) }><DeleteIcon/>Delete</MenuItem>
+            </Menu>
           </div>
         </>
     )
@@ -356,7 +390,7 @@ class CalendarManager extends React.Component {
                     locale="DE"
                     themeSystem='bootstrap'
                     allDaySlot={ false }                                  // don't allow full day event
-                    firstDay={ 1 }                                        // set first day of week to monday 1
+                    firstDay={ 6 }                                        // set first day of week to saturday 6
                     validRange={ { start: START_DATE, end: END_DATE } }   // calendar is only available in given period
                     initialView='timeGridWeek'
                     editable={ true }

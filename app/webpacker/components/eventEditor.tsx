@@ -15,6 +15,7 @@ import {
   Checkbox,
   ListItemText,
   FormHelperText,
+  FormControlLabel
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete'; // to-do: change icons to fontawesome
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
@@ -288,7 +289,23 @@ class EventEditor extends Component<any, any> {
                   }
                 </Select>
               </FormControl>
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    id="inputHasTransport"
+                    name="hasTransport"
+                    defaultChecked
+                    value={ this.state.selectedEvent.languages }
+                    onChange={ this.handleChange }
+                    color="primary"
+                    inputProps={{ 'aria-label': 'secondary checkbox' }}
+                  />
+                }
+                label="hasTransport"
+              />
             </CardContent>
+
             <CardActions>
               <Button size="small" color="primary" type="submit"><SaveAltIcon/>Save</Button>
               <Button size="small" onClick={ this.handleCopy }><CopyIcon/>Copy</Button>

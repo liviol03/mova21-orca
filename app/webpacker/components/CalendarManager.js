@@ -30,6 +30,9 @@ const styles = theme => ({
   eventContent: {
     height: "100%"
   },
+  truncatedText: {
+    textOverflow: "ellipsis"
+  }
 })
 
 class CalendarManager extends React.Component {
@@ -65,6 +68,13 @@ class CalendarManager extends React.Component {
 
   componentDidMount() {
     const { activityId, availableLanguages, spots } = this.props
+
+    document.addEventListener('click', (e) => {
+      if (e.ctrlKey) {
+        // todo define what action should be executed with ctrl key
+        console.log('With ctrl, do something...');
+      }
+    });
 
     // todo: improve error handling
     this.state.activityExecutionService.getAll(this.props.activityId).then((result) => {
@@ -142,6 +152,7 @@ class CalendarManager extends React.Component {
         this.state.event.setEnd(result.end)
         this.state.event.setProp("overlap", result.overlap)
 
+        this.handlContextMenuClose()
         this.setState({
           success: "Event successfully updated",
           showEditor: false,
@@ -153,6 +164,7 @@ class CalendarManager extends React.Component {
       this.state.activityExecutionService.create(this.state.activityId, event).then(result => {
         API.addEvent(result)
 
+        this.handlContextMenuClose()
         this.setState({
           success: "Event successfully created",
           showEditor: false,
@@ -253,16 +265,24 @@ class CalendarManager extends React.Component {
   // function to render the event content within the calendar
   renderEventContent(eventInfo) {
     const { classes } = this.props
+    let eventField = ""
     
+    if(eventInfo.event.extendedProps.field){
+      eventField = eventInfo.event.extendedProps.field.name
+    }
+
     return (
         <>
-          <div  title={ eventInfo.timeText } 
+          <div  title={ `${ eventInfo.timeText } - ${ eventField }` } 
                 className={ classes.eventContent } 
                 onContextMenu={ this.handleContextMenuClick } 
                 style={{ cursor: 'context-menu' }}
           >
             {eventInfo.timeText && (
-                <span><b>{ eventInfo.timeText } </b></span>
+                <>
+                  <span><b>{ eventInfo.timeText } </b></span>
+                  <p className={ classes.truncatedText }>{ eventField }</p>
+                </>
             )}
 
             <Menu

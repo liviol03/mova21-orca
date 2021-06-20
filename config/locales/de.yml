@@ -33,6 +33,14 @@ de:
         stufe_recommended: Stufen Empfohlen
         stufen: Stufen möglich
         transport_location: Transport-Ort
+      field:
+        name: Name
+      spot:
+        name: Name
+        color: Farbe für Erfassung der Durchführung
+        fields: Felder
+      activity_execution:
+        language_flags: Sprachen
       fixed_event:
         title: Titel
         starts_at: Beginnt um
@@ -103,6 +111,10 @@ de:
           attributes:
             lagerleiter:
               incomplete: ist unvollständig (Name, E-Mail, Adresse)
+        activity_execution:
+          attributes:
+            language_flags:
+              greater_than: Es muss mindestens eine Sprache gewählt werden.
     models:
       fixed_event:
         one: Groprogramm-Punkt
@@ -388,7 +400,7 @@ de:
     edit:
       title: Feld editieren
     index:
-      title: Felder verwalten
+      title: "%{spot}: Felder verwalten"
     new:
       title: Neues Feld erfassen
   leaders:
@@ -424,7 +436,7 @@ de:
     transport_location: Transport
     unit: Lager
     fixed_event: "Grobprogramm"
-    spots: Spots
+    spots: Programmspots & Felder
   number:
     currency:
       format:
@@ -635,3 +647,20 @@ de:
       next: ">"
       previous: "<"
       truncate: "&hellip;"
+  activity_execution_calendar:
+    delete:
+      confirm: "Bist du sicher, dass du die Durchführung löschen willst?"
+      success: "Durchführung erfolgreich gelöscht"
+      error: "Fehler beim Löschen der Durchführung:"
+    move:
+      success: "Durchführung erfolgreich verschoben"
+      error: "Fehler beim Verschieben der Durchführung:"
+    copy:
+      success: "Durchführung erfolgreich kopiert"
+      error: "Fehler beim Kopieren der Durchführung:"
+    create:
+      success: "Durchführung erfolgreich erstellt"
+      error: "Fehler beim Erstellen der Durchführung:"
+    update:
+      success: "Durchführung erfolgreich geändert"
+      error: "Fehler beim Ändern der Durchführung:"

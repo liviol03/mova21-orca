@@ -22,9 +22,9 @@ import LoadingBar from './loadingBar'
 import {ActivityExecutionService, Field} from "../services/activity-execution-service"
 
 // define range of calendar view
-const START_DATE = '2022-07-23'
-const END_DATE = '2022-08-07' // end date + 1
-const LOCAL = "DE"
+const START_DATE = new Date(Orca.campStart);
+const END_DATE = new Date(Orca.campEnd);
+const LOCALE = Orca.locale;
 
 const styles = theme => ({
   eventContent: {
@@ -56,18 +56,10 @@ class CalendarManager extends React.Component {
       mouseX: null,         // position of context menu
       mouseY: null          // position of context menu
     }
-
-    this.handleOnClose = this.handleOnClose.bind(this)
-    this.handleEventRemove = this.handleEventRemove.bind(this)
-    this.handleEventCopy = this.handleEventCopy.bind(this)
-    this.renderSumEvent = this.renderSumEvent.bind(this)
-    this.renderEventContent = this.renderEventContent.bind(this)
-    this.handleContextMenuClick = this.handleContextMenuClick.bind(this)
-    this.handlContextMenuClose = this.handlContextMenuClose.bind(this)
   }
 
   componentDidMount() {
-    const { activityId, availableLanguages, spots } = this.props
+    const {activityId, availableLanguages, spots} = this.props
 
     document.addEventListener('click', (e) => {
       if (e.ctrlKey) {
@@ -90,8 +82,8 @@ class CalendarManager extends React.Component {
 
   // converts javascript date to readable outut
   convertToReadableTime(datetime) {
-    let date = datetime.toLocaleDateString(LOCAL)
-    let time = datetime.toLocaleTimeString(LOCAL)
+    let date = datetime.toLocaleDateString(LOCALE)
+    let time = datetime.toLocaleTimeString(LOCALE)
 
     return [date, time].join(" ")
   }
@@ -122,6 +114,7 @@ class CalendarManager extends React.Component {
     end: selectedEvent.end,
     extendedProps: {
       languages: selectedEvent.languages,
+      hasTransport: selectedEvent.hasTransport,
       amountParticipants: selectedEvent.amountParticipants,
       field: selectedEvent.field,
       spot: selectedEvent.spot
@@ -134,7 +127,7 @@ class CalendarManager extends React.Component {
     const API = this.state.calendarRef.current.getApi()
 
     // if id given, update event otherwise create new one
-    if(event.id) {
+    if (event.id) {
       // todo: better error handling
       this.state.activityExecutionService.update(this.state.activityId, event).then(result => {
         // save extended attributes to event object
@@ -154,48 +147,51 @@ class CalendarManager extends React.Component {
 
         this.handlContextMenuClose()
         this.setState({
-          success: "Event successfully updated",
+          success: Orca.i18n.activityExecutionCalendar.update.success,
           showEditor: false,
         })
+      }).catch((err) => {
+        this.setState({error: { message: `${Orca.i18n.activityExecutionCalendar.update.error} ${err.join(',')}`}})
       })
-    }
-    else {
+    } else {
       // todo: better error handling
       this.state.activityExecutionService.create(this.state.activityId, event).then(result => {
         API.addEvent(result)
 
         this.handlContextMenuClose()
         this.setState({
-          success: "Event successfully created",
+          success: Orca.i18n.activityExecutionCalendar.create.success,
           showEditor: false,
         })
       })
     }
   }
 
-  handleEventCopy(evt, eventId) {
+  handleEventCopy(eventId) {
     const API = this.state.calendarRef.current.getApi()
     let event = API.getEventById(eventId)
-
-    if(event) {
+    console.log(event);
+    if (event) {
       // todo: better event handling
       this.state.activityExecutionService.create(this.state.activityId, event).then(result => {
         API.addEvent(result)
 
         this.handlContextMenuClose()
         this.setState({
-          success: "Event successfully copied",
+          success: Orca.i18n.activityExecutionCalendar.copy.success,
           showEditor: false,
         })
+      }).catch((err) => {
+        this.setState({error: { message: `${Orca.i18n.activityExecutionCalendar.copy.error} ${err.join(',')}`}})
       })
     }
   }
 
-  handleEdit = (evt, eventId) => {
+  handleEdit = (eventId) => {
     const API = this.state.calendarRef.current.getApi()
     let event = API.getEventById(eventId)
 
-    if(event) {
+    if (event) {
       this.setState({
         showEditor: true,
         event: event
@@ -203,26 +199,26 @@ class CalendarManager extends React.Component {
     }
   }
 
-  handleEventRemove(evt, eventId) {
+  handleEventRemove(eventId) {
     const API = this.state.calendarRef.current.getApi()
     let event = API.getEventById(eventId)
 
-    if(event) {
-      if (window.confirm(`Are you sure you would like to delete the activity execution from '${ this.convertToReadableTime(event.start) }' till '${ this.convertToReadableTime(event.end) }'?`)) {
+    if (event) {
+      if (window.confirm(Orca.i18n.activityExecutionCalendar.delete.confirm)) {
         this.state.activityExecutionService.delete(this.state.activityId, event.id).then((success) => {
-          if(success) {
+          if (success) {
             event.remove()
 
             this.handlContextMenuClose()
             this.setState({
               showEditor: false,
-              success: "Event successfully removed"
+              success: Orca.i18n.activityExecutionCalendar.delete.success
             })
           } else {
             this.handlContextMenuClose()
             this.setState({
               showEditor: false,
-              error: "Could not delete event execution"
+              error: Orca.i18n.activityExecutionCalendar.delete.error
             })
           }
         })
@@ -230,20 +226,34 @@ class CalendarManager extends React.Component {
     }
   }
 
-  handleEventDrag = (evnt) =>{
-    this.state.activityExecutionService.update(this.state.activityId, evnt.event).then(result => {
-      this.setState({
-        success: "Event successfully moved"
-      })
-    })
+  handleEventDrag = (evnt) => {
+    if (!evnt.event.overlap) {
+      this.state.activityExecutionService.update(this.state.activityId, evnt.event).then(result => {
+        this.setState({
+          success: Orca.i18n.activityExecutionCalendar.move.success
+        })
+      }).catch((err) => {
+        this.setState({error: { message: `${Orca.i18n.activityExecutionCalendar.move.error} ${err.join(',')}`}})
+        evnt.revert();
+      });
+    } else {
+      evnt.revert();
+    }
   }
 
-  handleEventResize = (evnt) =>{
-    this.state.activityExecutionService.update(this.state.activityId, evnt.event).then(result => {
-      this.setState({
-        success: "Event successfully moved"
+  handleEventResize = (evnt) => {
+    if (!evnt.event.overlap) {
+      this.state.activityExecutionService.update(this.state.activityId, evnt.event).then(result => {
+        this.setState({
+          success: Orca.i18n.activityExecutionCalendar.move.success
+        })
+      }).catch((err) => {
+        this.setState({error: { message: `${Orca.i18n.activityExecutionCalendar.move.error} ${err.join(',')}`}})
+        evnt.revert();
       })
-    })
+    } else {
+      evnt.revert();
+    }
   }
 
   handleContextMenuClick = (event) => {
@@ -264,167 +274,168 @@ class CalendarManager extends React.Component {
 
   // function to render the event content within the calendar
   renderEventContent(eventInfo) {
-    const { classes } = this.props
+    const {classes} = this.props
     const eventDescription = eventInfo.event.extendedProps.field ? eventInfo.event.extendedProps.field.name : eventInfo.event.title;
     return (
-        <>
-          <div  title={ `${ eventInfo.timeText } - ${ eventDescription }` }
-                className={ classes.eventContent } 
-                onContextMenu={ this.handleContextMenuClick } 
-                style={{ cursor: 'context-menu' }}
-          >
-            {eventInfo.timeText && (
-                <>
-                  <span><b>{ eventInfo.timeText } </b></span>
-                  <p className={ classes.truncatedText }>{ eventDescription }</p>
-                </>
-            )}
+      <>
+        <div title={`${eventInfo.timeText} - ${eventDescription}`}
+             className={classes.eventContent}
+             onContextMenu={(evt) => eventInfo.event.overlap ? null : this.handleContextMenuClick(evt)}
+             style={{cursor: 'context-menu'}}
+        >
+          {eventInfo.timeText && (
+            <>
+              <span><b>{eventInfo.timeText} </b></span>
+              <p className={classes.truncatedText}>{eventDescription}</p>
+            </>
+          )}
 
-            <Menu
-              keepMounted
-              open={ this.state.mouseY !== null }
-              onClose={ this.handlContextMenuClose }
-              anchorReference="anchorPosition"
-              anchorPosition={
-                this.state.mouseY !== null && this.state.mouseX !== null
-                  ? { top: this.state.mouseY, left: this.state.mouseX }
-                  : undefined
-              }
-            >
-              <MenuItem onClick={ (evt) => this.handleEdit(evt, eventInfo.event.id) }><EditIcon/>Edit</MenuItem>
-              <MenuItem onClick={ (evt) => this.handleEventCopy(evt, eventInfo.event.id) }><CopyIcon/>Copy</MenuItem>
-              <MenuItem size="small" onClick={ (evt) => this.handleEventRemove(evt, eventInfo.event.id) }><DeleteIcon/>Delete</MenuItem>
-            </Menu>
-          </div>
-        </>
+          <Menu
+            keepMounted
+            open={this.state.mouseY !== null}
+            onClose={() => this.handlContextMenuClose()}
+            anchorReference="anchorPosition"
+            anchorPosition={
+              this.state.mouseY !== null && this.state.mouseX !== null
+                ? {top: this.state.mouseY, left: this.state.mouseX}
+                : undefined
+            }
+          >
+            <MenuItem onClick={() => this.handleEdit(eventInfo.event.id)}><EditIcon/>Edit</MenuItem>
+            <MenuItem onClick={() => this.handleEventCopy(eventInfo.event.id)}><CopyIcon/>Copy</MenuItem>
+            <MenuItem size="small"
+                      onClick={() => this.handleEventRemove(eventInfo.event.id)}><DeleteIcon/>Delete</MenuItem>
+          </Menu>
+        </div>
+      </>
     )
   }
 
   // render top information div displaying current events
   renderSidebar() {
     return (
-        <div className='calendar-manager-sidebar'>
-          <div className='calendar-manager-sidebar-section'>
-            <h2>Date range</h2>
-            <p> Only dates can be seleceted between { START_DATE } - { END_DATE }</p>
-          </div>
-          <div className='calendar-manager-sidebar-section'>
-            <h2>All Events ({ this.state.events.length })</h2>
-            <ul>
-              { this.state.events.map(this.renderSumEvent) }
-            </ul>
-          </div>
+      <div className='calendar-manager-sidebar'>
+        <div className='calendar-manager-sidebar-section'>
+          <h2>Date range</h2>
+          <p> Only dates can be seleceted between {START_DATE.toString()} - {END_DATE.toString()}</p>
         </div>
+        <div className='calendar-manager-sidebar-section'>
+          <h2>All Events ({this.state.events.length})</h2>
+          <ul>
+            {this.state.events.map((event) => this.renderSumEvent(event))}
+          </ul>
+        </div>
+      </div>
     )
   }
 
   // render event information within top information div
   renderSumEvent(event) {
     return (
-        <li key={ event.id }>
-          <i>{ event.title } - </i>
-          <b>
-            { event.start && (
-                this.convertToReadableTime(event.start)
-            )}
-          </b>
-          -
-          <b>
-            { event.end && (
-                this.convertToReadableTime(event.end)
-            )}
-          </b>
-          { event.extendedProps && (
-              <div>
-                <i>{ event.extendedProps.language_flags } - </i>
-                <i>{ event.extendedProps.amountParticipants } - </i>
-                <i>{ event.extendedProps.spot.name }</i>
-              </div>
+      <li key={event.id}>
+        <i>{event.title} - </i>
+        <b>
+          {event.start && (
+            this.convertToReadableTime(event.start)
           )}
-        </li>
+        </b>
+        -
+        <b>
+          {event.end && (
+            this.convertToReadableTime(event.end)
+          )}
+        </b>
+        {event.extendedProps && (
+          <div>
+            <i>{event.extendedProps.language_flags} - </i>
+            <i>{event.extendedProps.amountParticipants} - </i>
+            <i>{event.extendedProps.spot.name}</i>
+          </div>
+        )}
+      </li>
     )
   }
 
   renderHelperElements() {
     return (
-        <div>
-          {this.state.error && (
-              /* Show error bar based on flag*/
-              <ErrorSnackbar
-                  onClose={ () => this.setState({ error: null }) }
-                  message={ this.state.error.message }
-              />
-          )}
+      <div>
+        {this.state.error && (
+          /* Show error bar based on flag*/
+          <ErrorSnackbar
+            onClose={() => this.setState({error: null})}
+            message={this.state.error.message}
+          />
+        )}
 
-          {this.state.loading && (
-              /* Show loading based on flag*/
-              <LoadingBar/>
-          )}
+        {this.state.loading && (
+          /* Show loading based on flag*/
+          <LoadingBar/>
+        )}
 
-          {this.state.success && (
-              /* show info bar based on flag*/
-              <InfoSnackbar
-                  onClose={ () => this.setState({ success: null }) }
-                  message={ this.state.success }
-              />
-          )}
-        </div>
+        {this.state.success && (
+          /* show info bar based on flag*/
+          <InfoSnackbar
+            onClose={() => this.setState({success: null})}
+            message={this.state.success}
+          />
+        )}
+      </div>
     )
   }
 
   render() {
     return (
-        <div className='calendar-manager'>
-          { this.renderSidebar() }
+      <div className='calendar-manager'>
+        {this.renderSidebar()}
 
-          <div className='calendar-manager-main' >
-            { this.state.showEditor && (
-                /* Show editor based on flag*/
-                <EventEditor
-                    onSave={ this.handleEventSave }
-                    onDelete={ this.handleEventRemove }
-                    onClose={ this.handleOnClose }
-                    onCopy={ this.handleEventCopy }
-                    event={ this.state.event }
-                    events={ this.state.events }
-                    availableLanguages={ this.state.availableLanguages }
-                    spots={ this.state.spots }
-                />
-            )}
+        <div className='calendar-manager-main'>
+          {this.state.showEditor && (
+            /* Show editor based on flag*/
+            <EventEditor
+              onSave={(selectedEvent) => this.handleEventSave(selectedEvent)}
+              onDelete={(eventId) => this.handleEventRemove(eventId)}
+              onClose={() => this.handleOnClose()}
+              onCopy={(eventId) => this.handleEventCopy(eventId)}
+              event={this.state.event}
+              events={this.state.events}
+              availableLanguages={this.state.availableLanguages}
+              spots={this.state.spots}
+            />
+          )}
 
-            {/* display fullcalendar */ }
-            {this.state.calendarRef && (
-                <FullCalendar
-                    ref={ this.state.calendarRef }
-                    plugins={ [bootstrapPlugin, dayGridPlugin, timeGridPlugin, interactionPlugin] }
-                    headerToolbar={ {
-                      left: 'prev,next',
-                      center: 'title',
-                      right: 'timeGridWeek,timeGridDay'
-                    } }
-                    locale="DE"
-                    themeSystem='bootstrap'
-                    allDaySlot={ false }                                  // don't allow full day event
-                    firstDay={ 6 }                                        // set first day of week to saturday 6
-                    validRange={ { start: START_DATE, end: END_DATE } }   // calendar is only available in given period
-                    initialView='timeGridWeek'
-                    editable={ true }
-                    selectable={ true }
-                    selectMirror={ true }
-                    dayMaxEvents={ false }
-                    eventContent={ this.renderEventContent }              // custom render function
-                    eventClick={ this.handleEventClick }
-                    eventResize={ this.handleEventResize }
-                    eventDrop={ this.handleEventDrag }
-                    events={ this.state.events }
-                    select={ this.handleDateSelect }
-                    contentHeight="auto"
-                />
-            )}
-          </div>
-
-          { this.renderHelperElements() }
+          {/* display fullcalendar */}
+          {this.state.calendarRef && (
+            <FullCalendar
+              ref={this.state.calendarRef}
+              plugins={[bootstrapPlugin, dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              headerToolbar={{
+                left: 'prev,next',
+                center: 'title',
+                right: 'timeGridWeek,timeGridDay'
+              }}
+              locale="DE"
+              themeSystem='bootstrap'
+              allDaySlot={false}                                  // don't allow full day event
+              firstDay={6}                                        // set first day of week to saturday 6
+              validRange={{start: START_DATE, end: END_DATE}}   // calendar is only available in given period
+              initialView='timeGridWeek'
+              editable={true}
+              selectable={true}
+              selectMirror={true}
+              dayMaxEvents={false}
+              eventContent={(eventContent) => this.renderEventContent(eventContent)}              // custom render function
+              eventClick={(elem) => elem.event.overlap ? null : this.handleEdit(elem.event.id)}
+              eventResize={this.handleEventResize}
+              eventDrop={this.handleEventDrag}
+              events={this.state.events}
+              select={this.handleDateSelect}
+              contentHeight="auto"
+            />
+          )}
         </div>
+
+        {this.renderHelperElements()}
+      </div>
     )
   }
 }

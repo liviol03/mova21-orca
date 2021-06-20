@@ -1,4 +1,4 @@
-type Language = 'de' | 'fr' | 'it' | 'en';
+export type Language = 'de' | 'fr' | 'it' | 'en';
 
 export interface Activity {
     id: number;
@@ -14,7 +14,7 @@ interface ActivityExecutionRequest {
         field_id: number;
         amount_participants: number;
         languages: Array<Language>;
-        hasTransport: boolean
+        transport: boolean
     }
 }
 
@@ -27,7 +27,7 @@ interface ActivityExecution {
     field: Field;
     amount_participants: number;
     languages: Array<Language>;
-    hasTransport: boolean
+    transport: boolean
 }
 
 interface FixedEvent {
@@ -35,7 +35,7 @@ interface FixedEvent {
     title: string;
     starts_at: Date;
     ends_at: Date;
-    overlap: boolean;
+    overlap: true;
 }
 
 export interface Field {
@@ -50,12 +50,30 @@ export interface Spot {
     fields: Array<Field>
 }
 
+interface SuccessfulBackendResponse<T> {
+    success: true;
+    data: T;
+}
+
+interface UnsuccessfulBackendResponse {
+    success: false;
+    errors: string[];
+}
+
+function isSuccessfulBackendResponse<T>(backendResponse: SuccessfulBackendResponse<T> | UnsuccessfulBackendResponse): backendResponse is SuccessfulBackendResponse<T> {
+    return (backendResponse as SuccessfulBackendResponse<T>).success
+}
+
+export type BackendResponse<T> = SuccessfulBackendResponse<T> | UnsuccessfulBackendResponse;
+
 // fullcalendar definition of an event
 export interface FullCalendarEvent {
     id: number;
     start: Date;
     end: Date;
     title?: string;
+    allDay: boolean;
+    editable?: boolean;
     extendedProps?: {
         languages: Array<Language>;
         amountParticipants: number;
@@ -67,6 +85,7 @@ export interface FullCalendarEvent {
     color: string;
 }
 
+
 export class ActivityExecutionService {
     public getAll(activityId: number): Promise<Array<FullCalendarEvent>> {
         return Promise.all([this.fetchActivityExecutions(activityId), this.fetchFixedEvents()])
@@ -74,7 +93,7 @@ export class ActivityExecutionService {
                 [...activityExecutions, ...fixedEvents])
     }
 
-    private fetchActivityExecutions(activityId: number): Promise<Array<FullCalendarEvent>>  {
+    private fetchActivityExecutions(activityId: number): Promise<Array<FullCalendarEvent>> {
         return fetch(`/activities/${activityId}/activity_executions`, {
             method: 'GET',
             headers: this.getHeaders()
@@ -84,7 +103,7 @@ export class ActivityExecutionService {
                 activityExexutions.map(activityExexution => this.convertActivityExecutionToFullCalendarEvent(activityExexution)));
     }
 
-    private fetchFixedEvents(): Promise<Array<FullCalendarEvent>>  {
+    private fetchFixedEvents(): Promise<Array<FullCalendarEvent>> {
         return fetch('/admin/fixed_events', {
             method: 'GET',
             headers: this.getHeaders()
@@ -98,12 +117,13 @@ export class ActivityExecutionService {
             id: activityExexution.id,
             start: new Date(activityExexution.starts_at),
             end: new Date(activityExexution.ends_at),
+            allDay: false,
             extendedProps: {
                 languages: activityExexution.languages,
                 amountParticipants: activityExexution.amount_participants,
                 spot: activityExexution.spot,
                 field: activityExexution.field,
-                hasTransport: activityExexution.hasTransport
+                hasTransport: activityExexution.transport
             },
             overlap: false,
             color: activityExexution.spot.color
@@ -115,6 +135,7 @@ export class ActivityExecutionService {
             id: fixedEvent.id,
             title: fixedEvent.title,
             start: new Date(fixedEvent.starts_at),
+            allDay: false,
             end: new Date(fixedEvent.ends_at),
             overlap: true,
             color: '#ffeb00'
@@ -130,7 +151,13 @@ export class ActivityExecutionService {
 
         return fetch(`/activities/${activityId}/activity_executions`, requestOptions)
             .then(response => response.json())
-            .then((activityExecution: ActivityExecution) => this.convertActivityExecutionToFullCalendarEvent(activityExecution));
+            .then((response: BackendResponse<ActivityExecution>) => {
+                if (isSuccessfulBackendResponse(response)) {
+                    return this.convertActivityExecutionToFullCalendarEvent(response.data);
+                } else {
+                    throw response.errors;
+                }
+            });
     }
 
     private getActivityExecutionRequestBody(fullCalendarEvent: FullCalendarEvent) {
@@ -141,7 +168,7 @@ export class ActivityExecutionService {
                 languages: fullCalendarEvent.extendedProps.languages,
                 field_id: fullCalendarEvent.extendedProps.field.id,
                 amount_participants: fullCalendarEvent.extendedProps.amountParticipants,
-                hasTransport: fullCalendarEvent.extendedProps.hasTransport
+                transport: fullCalendarEvent.extendedProps.hasTransport
             }
         };
         return JSON.stringify(request);
@@ -156,7 +183,13 @@ export class ActivityExecutionService {
 
         return fetch(`/activities/${activityId}/activity_executions/${activityExecution.id}`, requestOptions)
             .then(response => response.json())
-            .then((activityExecution: ActivityExecution) => this.convertActivityExecutionToFullCalendarEvent(activityExecution));
+            .then((response: BackendResponse<ActivityExecution>) => {
+                if (isSuccessfulBackendResponse(response)) {
+                    return this.convertActivityExecutionToFullCalendarEvent(response.data);
+                } else {
+                    throw response.errors;
+                }
+            });
     }
 
     public delete(activityId: number, activityExecutionId: number): Promise<boolean> {

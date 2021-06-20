@@ -5,7 +5,8 @@ class ActivityExecution < ApplicationRecord
   belongs_to :activity, inverse_of: :activity_executions
   belongs_to :field, inverse_of: :activity_executions
   has_one :spot, through: :field
-  validates_presence_of :starts_at, :ends_at
+  validates_presence_of :starts_at, :ends_at, :transport
+  validates :language_flags, numericality: { greater_than: 0 }, allow_nil: false
 
   bitfield :language_flags, *Activity::LANGUAGES
 

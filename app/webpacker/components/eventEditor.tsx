@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import {
   TextField,
   withStyles,
@@ -15,18 +15,18 @@ import {
   Checkbox,
   ListItemText,
   FormHelperText,
-  FormControlLabel
+  FormControlLabel, Theme, createStyles
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete'; // to-do: change icons to fontawesome
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import ClearIcon from '@material-ui/icons/Clear';
 import CopyIcon from '@material-ui/icons/FileCopy'
 import {compose} from 'react-recompose';
-import {FullCalendarEvent} from "../services/activity-execution-service"
+import { Field, FullCalendarEvent, Language, Spot } from "../services/activity-execution-service"
 import * as moment from 'moment';
 import 'moment-timezone';
 
-const styles = theme => ({
+const styles = ({ spacing }: Theme) => createStyles({
   modal: {
     display: 'flex',
     outline: 0,
@@ -43,10 +43,10 @@ const styles = theme => ({
     flexDirection: 'column',
   },
   marginTop: {
-    marginTop: theme.spacing(2),
+    marginTop: spacing(2),
   },
   inputField: {
-    marginTop: theme.spacing(1)
+    marginTop: spacing(1)
   }
 });
 
@@ -54,10 +54,44 @@ function convertDateToIso(date) {
   return moment(date).toISOString(true).substring(0, 16)
 }
 
-const defaultSpot = { id: null, name: '', fields: [] };
+const defaultSpot = { id: null, name: '', fields: [], color: '' };
 const defaultField = { id: null, name: '' };
 
-class EventEditor extends Component<any, any> {
+interface FlattenedFullcalendarEvent {
+  id?: number;
+  title: string;
+  start: string;
+  end: string;
+  amountParticipants: number;
+  languages: Array<Language>;
+  spot: Spot,
+  hasTransport: boolean;
+  field: Field,
+  allDay: boolean;
+  overlap: boolean;
+}
+
+interface EventEditorProps {
+  event: FullCalendarEvent;
+  events: Array<FullCalendarEvent>;
+  availableLanguages: Array<Language>;
+  spots: Array<Spot>;
+  onSave: (event: FlattenedFullcalendarEvent) => void;
+  onClose: () => void;
+  onCopy: (eventId: number) => void;
+  onDelete: (eventId: number) => void;
+  classes: any; // TODO
+}
+
+interface EventEditorState {
+  events: Array<FullCalendarEvent>;
+  availableSpots: Array<Spot>;
+  selectedEvent: FlattenedFullcalendarEvent;
+  availableLanguages: Array<Language>;
+  errorText: string;
+}
+
+class EventEditor extends Component<EventEditorProps, EventEditorState> {
   constructor(props: any) {
     super(props);
 
@@ -74,6 +108,7 @@ class EventEditor extends Component<any, any> {
         amountParticipants: 0,
         spot: defaultSpot,
         field: defaultField,
+        hasTransport: true,
         languages: [],
         allDay: false,
         overlap: true
@@ -82,14 +117,10 @@ class EventEditor extends Component<any, any> {
 
       errorText: ""                 // error text which will be displayed on the form
     };
-
-    this.handleSubmit = this.handleSubmit.bind(this)
-    this.handleCopy = this.handleCopy.bind(this)
   }
 
   componentDidMount() {
     const {event, events, availableLanguages, spots} = this.props
-
     let selectedEvent = {
       ...this.state.selectedEvent,
       id: event.id,
@@ -150,18 +181,18 @@ class EventEditor extends Component<any, any> {
   }
 
   handleSpotChange = evt => {
-    let spot_id = evt.target.value
+    let spotId = evt.target.value
 
     this.setState({
-      selectedEvent: { ...this.mutateSelectedEventState('spot', this.state.availableSpots.find(spot => spot.id === spot_id)), field: defaultField }
+      selectedEvent: { ...this.mutateSelectedEventState('spot', this.state.availableSpots.find(spot => spot.id === spotId)), field: defaultField }
     });
   }
 
   handleFieldChange = evt => {
-    let field_id = evt.target.value
+    let fieldId = evt.target.value
 
     this.setState({
-      selectedEvent: this.mutateSelectedEventState('field', this.state.selectedEvent.spot.fields.find(field => field.id === field_id))
+      selectedEvent: this.mutateSelectedEventState('field', this.state.selectedEvent.spot.fields.find(field => field.id === fieldId))
     });
   }
 
@@ -176,11 +207,11 @@ class EventEditor extends Component<any, any> {
   };
 
   // handling copy of event
-  handleCopy = evt => {
+  handleCopy = () => {
     const { onCopy } = this.props
 
     // trigger parent function passed by props
-    onCopy("", this.state.selectedEvent.id)
+    onCopy(this.state.selectedEvent.id)
   }
 
   render() {
@@ -194,7 +225,7 @@ class EventEditor extends Component<any, any> {
         open
       >
         <Card className={ classes.modalCard }>
-          <form onSubmit={ this.handleSubmit }>
+          <form onSubmit={ (evt) => this.handleSubmit(evt) }>
             <CardContent className={ classes.modalCardContent }>
               <TextField
                 key="inputStartTime"
@@ -296,7 +327,7 @@ class EventEditor extends Component<any, any> {
                     id="inputHasTransport"
                     name="hasTransport"
                     defaultChecked
-                    value={ this.state.selectedEvent.languages }
+                    value={ this.state.selectedEvent.hasTransport }
                     onChange={ this.handleChange }
                     color="primary"
                     inputProps={{ 'aria-label': 'secondary checkbox' }}
@@ -310,8 +341,8 @@ class EventEditor extends Component<any, any> {
               <Button size="small" color="primary" type="submit"><SaveAltIcon/>Save</Button>
               <Button size="small" onClick={ this.handleCopy }><CopyIcon/>Copy</Button>
               <Button size="small"
-                      onClick={ (evt) => onDelete(evt, this.state.selectedEvent.id) }><DeleteIcon/>Delete</Button>
-              <Button size="small" onClick={ onClose }><ClearIcon/>Cancel</Button>
+                      onClick={ () => onDelete(this.state.selectedEvent.id) }><DeleteIcon/>Delete</Button>
+              <Button size="small" onClick={ () => onClose() }><ClearIcon/>Cancel</Button>
             </CardActions>
           </form>
         </Card>
@@ -321,5 +352,5 @@ class EventEditor extends Component<any, any> {
 }
 
 export default compose(
-  withStyles(styles as any),
+  withStyles(styles),
 )(EventEditor);

@@ -8,33 +8,34 @@ class ActivityExecutionsController < ApplicationController
 
   def create
     @activity_execution = @activity.activity_executions.create(activity_execution_params)
-    if @activity_execution
-      render status: :ok, json: ActivityExecutionBlueprint.render(@activity_execution)
+    if @activity_execution.persisted?
+      render status: :ok, json: { success: true, data: ActivityExecutionBlueprint.render_as_hash(@activity_execution) }
     else
-      render status: :error
+      render status: :bad_request, json: { success: false, errors: @activity_execution.errors.full_messages }
     end
   end
 
   def update
     if @activity_execution.update(activity_execution_params)
-      render status: :ok, json: ActivityExecutionBlueprint.render(@activity_execution)
+      render status: :ok, json: { success: true, data: ActivityExecutionBlueprint.render_as_hash(@activity_execution) }
     else
-      render status: :error
+      render status: :bad_request, json: { success: false, errors: @activity_execution.errors.full_messages }
     end
   end
 
   def destroy
     if @activity_execution.destroy
-      render status: :ok, json: { success: true }
+      render status: :ok, json: { success: true, data: nil }
     else
-      render status: :error
+      render status: :bad_request, json: { success: false }
     end
   end
 
   private
 
   def activity_execution_params
-    params.require(:activity_execution).permit(:starts_at, :ends_at, :field_id, :spot_id, :amount_participants, languages: []).tap do |params|
+    params.require(:activity_execution).permit(:starts_at, :ends_at, :field_id, :spot_id, :amount_participants,
+                                               :transport, languages: []).tap do |params|
       if params[:languages]
         Activity::LANGUAGES.each do |language|
           params[language] = params[:languages].include? language.to_s.sub('language_', '')

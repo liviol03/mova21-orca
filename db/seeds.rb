@@ -42,5 +42,5 @@ activities.each do |activity|
   end
 end
 
-FactoryBot.create(:fixed_event, starts_at:  BULA_START.change({ hour: 9, min: 0, sec: 0 }), title: 'Eröffnungsfeier')
-FactoryBot.create(:fixed_event, starts_at:  BULA_END.change({ hour: 9, min: 0, sec: 0 }), title: 'Abschlussfeier')
+FactoryBot.create(:fixed_event, starts_at:  Orca::CAMP_START.change({ hour: 9, min: 0, sec: 0 }), title: 'Eröffnungsfeier')
+FactoryBot.create(:fixed_event, starts_at:  Orca::CAMP_END.change({ hour: 9, min: 0, sec: 0 }), title: 'Abschlussfeier')

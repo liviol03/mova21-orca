@@ -5,7 +5,7 @@ module Admin
 
     # GET /fields
     def index
-      @fields = Field.all
+      @fields = @spot.fields
     end
 
     # GET /fields/1
@@ -14,7 +14,7 @@ module Admin
 
     # GET /fields/new
     def new
-      @field = Field.new
+      @field = @spot.fields.new
     end
 
     # GET /fields/1/edit
@@ -26,7 +26,7 @@ module Admin
       @field = @spot.fields.new(field_params)
 
       if @field.save
-        redirect_to admin_spot_fields_path(@spot), notice: 'Field was successfully created.'
+        redirect_to admin_spot_fields_path(@spot), notice: t('messages.created.success')
       else
         render :new
       end
@@ -35,7 +35,7 @@ module Admin
     # PATCH/PUT /fields/1
     def update
       if @field.update(field_params)
-        redirect_to admin_spot_fields_path(@spot), notice: 'Field was successfully updated.'
+        redirect_to admin_spot_fields_path(@spot), notice: t('messages.updated.success')
       else
         render :edit
       end
@@ -44,7 +44,7 @@ module Admin
     # DELETE /fields/1
     def destroy
       @field.destroy
-      redirect_to admin_fields_path, notice: 'Field was successfully destroyed.'
+      redirect_to admin_fields_path, notice: t('messages.deleted.success')
     end
 
     private

@@ -26,7 +26,7 @@ module Admin
       @spot = Spot.new(spot_params)
 
       if @spot.save
-        redirect_to admin_spots_path, notice: 'Spot was successfully created.'
+        redirect_to admin_spots_path, notice: t('messages.created.success')
       else
         render :new
       end
@@ -35,7 +35,7 @@ module Admin
     # PATCH/PUT /spots/1
     def update
       if @spot.update(spot_params)
-        redirect_to admin_spots_path, notice: 'Spot was successfully updated.'
+        redirect_to admin_spots_path, notice: t('messages.updated.success')
       else
         render :edit
       end
@@ -44,7 +44,7 @@ module Admin
     # DELETE /spots/1
     def destroy
       @spot.destroy
-      redirect_to admin_spots_path, notice: 'Spot was successfully destroyed.'
+      redirect_to admin_spots_path, notice: t('messages.deleted.success')
     end
 
     private

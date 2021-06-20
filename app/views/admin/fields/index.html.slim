@@ -1,14 +1,11 @@
-h1
-  => Field.model_name.human
-  | -
-  =< @spot.name
+h1 = t('fields.index.title', spot: @spot.name)
 
 .table-responsive
   table.table
     thead
       tr
         th = Field.human_attribute_name(:name)
-        th = Field.human_attribute_name(:fields)
+        th
         th
     tbody
       - @fields.each do |field|

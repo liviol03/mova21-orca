@@ -1,4 +1,4 @@
-h1 = Spot.model_name.human
+h1 = t('spots.index.title')
 
 .table-responsive
   table.table
@@ -11,7 +11,9 @@ h1 = Spot.model_name.human
       - @spots.each do |spot|
         tr
           td = spot.name
-          td = link_to spot.fields.count, admin_spot_fields_path(spot)
+          td = link_to admin_spot_fields_path(spot) do
+            => spot.fields.count
+            i.fa.fa-edit
           td = link_to t('buttons.edit'), edit_admin_spot_path(spot)
           td = link_to t('buttons.destroy'), admin_spot_path(spot), data: { confirm: 'Are you sure?' }, method: :delete
 

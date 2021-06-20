@@ -387,7 +387,7 @@ it:
     tag: Tags
     transport_location: Transport
     unit: Unità
-    activity_event: "programma approssimativo"
+    fixed_event: "programma approssimativo"
   number:
     currency:
       format:

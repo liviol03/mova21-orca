@@ -367,7 +367,7 @@ en:
     tag: Tags
     transport_location: Transport
     unit: Unit
-    activity_event: "Fixed eents"
+    fixed_event: "Fixed eents"
   number:
     currency:
       format:

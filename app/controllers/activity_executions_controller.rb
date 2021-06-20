@@ -3,7 +3,6 @@ class ActivityExecutionsController < ApplicationController
   load_and_authorize_resource through: :activity
 
   def index
-    # TODO: ActivityEventBlueprint.render(ActivityEvent.all) mergen mit ExecutionBlueprint
     render json: ActivityExecutionBlueprint.render(@activity_executions)
   end
 

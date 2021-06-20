@@ -33,7 +33,7 @@ de:
         stufe_recommended: Stufen Empfohlen
         stufen: Stufen möglich
         transport_location: Transport-Ort
-      activity_event:
+      fixed_event:
         title: Titel
         starts_at: Beginnt um
         ends_at: Endet um
@@ -92,6 +92,8 @@ de:
       messages:
         incomplete: ist unvollständig
         record_invalid: "Gültigkeitsprüfung ist fehlgeschlagen: %{errors}"
+        start_not_before_end: das Startdatum muss vor dem Enddatum liegen
+        record_invalid: 'Gültigkeitsprüfung ist fehlgeschlagen: %{errors}'
         restrict_dependent_destroy:
           has_many: Datensatz kann nicht gelöscht werden, da abhängige %{record} existieren.
           has_one: Datensatz kann nicht gelöscht werden, da ein abhängiger %{record}-Datensatz
@@ -102,7 +104,7 @@ de:
             lagerleiter:
               incomplete: ist unvollständig (Name, E-Mail, Adresse)
     models:
-      activity_event:
+      fixed_event:
         one: Groprogramm-Punkt
         other: Groprogramm-Punkte
       leader:
@@ -421,7 +423,7 @@ de:
     tag: Tags
     transport_location: Transport
     unit: Lager
-    activity_event: "Grobprogramm"
+    fixed_event: "Grobprogramm"
     spots: Spots
   number:
     currency:

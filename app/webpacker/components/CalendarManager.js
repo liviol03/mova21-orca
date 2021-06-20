@@ -265,15 +265,10 @@ class CalendarManager extends React.Component {
   // function to render the event content within the calendar
   renderEventContent(eventInfo) {
     const { classes } = this.props
-    let eventField = ""
-    
-    if(eventInfo.event.extendedProps.field){
-      eventField = eventInfo.event.extendedProps.field.name
-    }
-
+    const eventDescription = eventInfo.event.extendedProps.field ? eventInfo.event.extendedProps.field.name : eventInfo.event.title;
     return (
         <>
-          <div  title={ `${ eventInfo.timeText } - ${ eventField }` } 
+          <div  title={ `${ eventInfo.timeText } - ${ eventDescription }` }
                 className={ classes.eventContent } 
                 onContextMenu={ this.handleContextMenuClick } 
                 style={{ cursor: 'context-menu' }}
@@ -281,7 +276,7 @@ class CalendarManager extends React.Component {
             {eventInfo.timeText && (
                 <>
                   <span><b>{ eventInfo.timeText } </b></span>
-                  <p className={ classes.truncatedText }>{ eventField }</p>
+                  <p className={ classes.truncatedText }>{ eventDescription }</p>
                 </>
             )}
 

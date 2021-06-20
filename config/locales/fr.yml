@@ -391,7 +391,7 @@ fr:
     tag: Tags
     transport_location: Transport
     unit: Camp
-    activity_event: "programme approximatif"
+    fixed_event: "programme approximatif"
   number:
     currency:
       format:

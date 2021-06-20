@@ -1,4 +1,4 @@
-= simple_form_for([:admin, @activity_event]) do |f|
+= simple_form_for([:admin, @fixed_event]) do |f|
   = f.error_notification
   = f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present?
 
@@ -10,7 +10,7 @@
             - current_locale = locale == I18n.locale
             .tab-pane[id="name-#{locale}-tab" class="#{'show active' if current_locale}"
               aria-labelledby="name-#{locale}-tab" role='tabpanel']
-              = f.input "title_#{locale.to_s}", label: "#{t('activerecord.attributes.activity_event.title')} #{locale.upcase}"
+              = f.input "title_#{locale.to_s}", label: "#{t('activerecord.attributes.fixed_event.title')} #{locale.upcase}"
     = f.input :starts_at
     = f.input :ends_at
 

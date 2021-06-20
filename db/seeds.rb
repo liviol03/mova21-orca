@@ -17,8 +17,8 @@ FactoryBot.create(:unit, title: 'Sommerlager Wolfsstufe', stufe: Stufe.find_by(c
                   al: al, lagerleiter: lagerleiter)
 
 activity_1 = ActivityCategory.create(label_de: 'Ausflug', code: 'excursion')
-activity_2 = ActivityCategory.create(label_de: 'Aktivität', code: 'activity')
-activity_3 = ActivityCategory.create(label_de: 'Frohnarbeit', code: 'frohnarbeit')
+ActivityCategory.create(label_de: 'Aktivität', code: 'activity')
+ActivityCategory.create(label_de: 'Frohnarbeit', code: 'frohnarbeit')
 ActivityCategory.create([
                           { label_de: 'Wasser', ancestry: activity_1 },
                           { label_de: 'Berg', ancestry: activity_1 }
@@ -34,6 +34,13 @@ Field.create([
                { name: "Feld 2-2", spot: spots.last }
              ])
 
+BULA_START  = Time.new(2022, 7, 23, 9, 0)
+BULA_END  = Time.new(2022, 8, 6, 12, 0)
 activities.each do |activity|
-  FactoryBot.create_list(:activity_execution, 4, activity: activity, field: Field.all.sample)
+  4.times do
+    FactoryBot.create(:activity_execution, starts_at:  Faker::Time.between(from: BULA_START, to: BULA_END), activity: activity, field: Field.all.sample)
+  end
 end
+
+FactoryBot.create(:fixed_event, starts_at:  BULA_START.change({ hour: 9, min: 0, sec: 0 }), title: 'Eröffnungsfeier')
+FactoryBot.create(:fixed_event, starts_at:  BULA_END.change({ hour: 9, min: 0, sec: 0 }), title: 'Abschlussfeier')

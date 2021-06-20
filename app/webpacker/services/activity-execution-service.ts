@@ -20,6 +20,7 @@ interface ActivityExecutionRequest {
 
 interface ActivityExecution {
     id: number;
+    title: string;
     starts_at: Date;
     ends_at: Date;
     spot: Spot;
@@ -27,6 +28,14 @@ interface ActivityExecution {
     amount_participants: number;
     languages: Array<Language>;
     hasTransport: boolean
+}
+
+interface FixedEvent {
+    id: number;
+    title: string;
+    starts_at: Date;
+    ends_at: Date;
+    overlap: boolean;
 }
 
 export interface Field {
@@ -46,7 +55,8 @@ export interface FullCalendarEvent {
     id: number;
     start: Date;
     end: Date;
-    extendedProps: {
+    title?: string;
+    extendedProps?: {
         languages: Array<Language>;
         amountParticipants: number;
         field: Field,
@@ -59,16 +69,31 @@ export interface FullCalendarEvent {
 
 export class ActivityExecutionService {
     public getAll(activityId: number): Promise<Array<FullCalendarEvent>> {
+        return Promise.all([this.fetchActivityExecutions(activityId), this.fetchFixedEvents()])
+            .then(([activityExecutions, fixedEvents]) =>
+                [...activityExecutions, ...fixedEvents])
+    }
+
+    private fetchActivityExecutions(activityId: number): Promise<Array<FullCalendarEvent>>  {
         return fetch(`/activities/${activityId}/activity_executions`, {
             method: 'GET',
             headers: this.getHeaders()
         })
             .then(response => response.json())
             .then((activityExexutions: Array<ActivityExecution>) =>
-                activityExexutions.map(activityExexution => this.convertToFullCalendarEvent(activityExexution)));
+                activityExexutions.map(activityExexution => this.convertActivityExecutionToFullCalendarEvent(activityExexution)));
     }
 
-    private convertToFullCalendarEvent(activityExexution: ActivityExecution): FullCalendarEvent {
+    private fetchFixedEvents(): Promise<Array<FullCalendarEvent>>  {
+        return fetch('/admin/fixed_events', {
+            method: 'GET',
+            headers: this.getHeaders()
+        })
+            .then(response => response.json())
+            .then(fixedEvents => fixedEvents.map(fixedEvent => this.convertFixedEventsToFullCalendarEvent(fixedEvent)));
+    }
+
+    private convertActivityExecutionToFullCalendarEvent(activityExexution: ActivityExecution): FullCalendarEvent {
         return {
             id: activityExexution.id,
             start: new Date(activityExexution.starts_at),
@@ -80,8 +105,19 @@ export class ActivityExecutionService {
                 field: activityExexution.field,
                 hasTransport: activityExexution.hasTransport
             },
-            overlap: true,
+            overlap: false,
             color: activityExexution.spot.color
+        };
+    }
+
+    private convertFixedEventsToFullCalendarEvent(fixedEvent: FixedEvent): FullCalendarEvent {
+        return {
+            id: fixedEvent.id,
+            title: fixedEvent.title,
+            start: new Date(fixedEvent.starts_at),
+            end: new Date(fixedEvent.ends_at),
+            overlap: true,
+            color: '#ffeb00'
         };
     }
 
@@ -94,7 +130,7 @@ export class ActivityExecutionService {
 
         return fetch(`/activities/${activityId}/activity_executions`, requestOptions)
             .then(response => response.json())
-            .then((activityExecution: ActivityExecution) => this.convertToFullCalendarEvent(activityExecution));
+            .then((activityExecution: ActivityExecution) => this.convertActivityExecutionToFullCalendarEvent(activityExecution));
     }
 
     private getActivityExecutionRequestBody(fullCalendarEvent: FullCalendarEvent) {
@@ -120,7 +156,7 @@ export class ActivityExecutionService {
 
         return fetch(`/activities/${activityId}/activity_executions/${activityExecution.id}`, requestOptions)
             .then(response => response.json())
-            .then((activityExecution: ActivityExecution) => this.convertToFullCalendarEvent(activityExecution));
+            .then((activityExecution: ActivityExecution) => this.convertActivityExecutionToFullCalendarEvent(activityExecution));
     }
 
     public delete(activityId: number, activityExecutionId: number): Promise<boolean> {

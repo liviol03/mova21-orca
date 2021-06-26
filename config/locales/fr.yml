@@ -379,6 +379,7 @@ fr:
   nav:
     activity: Catalogue
     activity_category: Kategorie
+    fixed_event: programme approximatif
     language:
       de: DE
       en: EN
@@ -391,7 +392,6 @@ fr:
     tag: Tags
     transport_location: Transport
     unit: Camp
-    fixed_event: "programme approximatif"
   number:
     currency:
       format:

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Admin
   class FieldsController < ApplicationController
     load_and_authorize_resource :spot
@@ -9,8 +11,7 @@ module Admin
     end
 
     # GET /fields/1
-    def show
-    end
+    def show; end
 
     # GET /fields/new
     def new
@@ -18,8 +19,7 @@ module Admin
     end
 
     # GET /fields/1/edit
-    def edit
-    end
+    def edit; end
 
     # POST /fields
     def create

@@ -386,7 +386,7 @@ class CalendarManager extends React.Component {
   render() {
     return (
       <div className='calendar-manager'>
-        {this.renderSidebar()}
+        {/*{this.renderSidebar()}*/}
 
         <div className='calendar-manager-main'>
           {this.state.showEditor && (
@@ -413,7 +413,7 @@ class CalendarManager extends React.Component {
                 center: 'title',
                 right: 'timeGridWeek,timeGridDay'
               }}
-              locale="DE"
+              locale={Orca.shortLocale}
               themeSystem='bootstrap'
               allDaySlot={false}                                  // don't allow full day event
               firstDay={6}                                        // set first day of week to saturday 6

@@ -27,5 +27,5 @@
               i class="#{tag.icon} mr-2"
           td = link_to t('buttons.show'), activity
           td = link_to(t('buttons.edit'), edit_activity_path(activity)) if can?(:edit, activity)
-          td = link_to(t('buttons.destroy'), activity, data: { confirm: 'Are you sure?' }, method: :delete) if can?(:destroy, activity)
+          td = link_to(t('buttons.destroy'), activity, data: { confirm: t('buttons.confirm_delete') }, method: :delete) if can?(:destroy, activity)
 

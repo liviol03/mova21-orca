@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 module Admin
   class SpotsController < ApplicationController
     load_and_authorize_resource
-
 
     # GET /spots
     def index
@@ -9,8 +10,7 @@ module Admin
     end
 
     # GET /spots/1
-    def show
-    end
+    def show; end
 
     # GET /spots/new
     def new
@@ -18,8 +18,7 @@ module Admin
     end
 
     # GET /spots/1/edit
-    def edit
-    end
+    def edit; end
 
     # POST /spots
     def create

@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 class FixedEvent < ApplicationRecord
   extend Mobility
   validates_with StartBeforeEndValidator
-  validates_presence_of :starts_at, :ends_at
+  validates :starts_at, :ends_at, presence: true
 
   translates :title, type: :string, locale_accessors: true, fallbacks: true
 end

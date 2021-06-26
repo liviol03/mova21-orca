@@ -3,7 +3,6 @@
 class LeadersController < ApplicationController
   load_and_authorize_resource :activity
 
-
   def index; end
 
   def new

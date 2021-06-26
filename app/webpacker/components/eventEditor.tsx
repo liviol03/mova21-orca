@@ -151,21 +151,22 @@ class EventEditor extends Component<EventEditorProps, EventEditorState> {
   }
 
   handleChange = evt => {
+    const value = evt.target.type === 'checkbox' ? evt.target.checked : evt.target.value;
     let newSelectedEventState = {
       ...this.state.selectedEvent,
-      ...this.mutateSelectedEventState(evt.target.name, evt.target.value)
+      ...this.mutateSelectedEventState(evt.target.name, value)
     };
 
     // check if the new event has a valid time period given, so that the start is not in front of the end time
     if (new Date(newSelectedEventState.start) > new Date(newSelectedEventState.end)) {
       this.setState({
-        errorText: "The end time can not be before the start time"
+        errorText: Orca.i18n.activityExecutionCalendar.editor.date_invalid
       })
-    } else if (this.checkIfEventsOverLap(newSelectedEventState)) {
-      // check if new event is overlapping with a blocking event
-      this.setState({
-        errorText: "The event is overlapping with a blocking event"
-      })
+    // } else if (this.checkIfEventsOverLap(newSelectedEventState)) {
+    //   // check if new event is overlapping with a blocking event
+    //   this.setState({
+    //     errorText: Orca.i18n.activityExecutionCalendar.editor.date.overlapping_error
+    //   })
     } else {
       this.setState({
         selectedEvent: newSelectedEventState,
@@ -295,10 +296,10 @@ class EventEditor extends Component<EventEditorProps, EventEditorState> {
                   </Select>
                 </Fragment>
               )}
-              <FormHelperText id="helpertext-labelInputField">To manage the spots plesae use the <a href={ LINK_TO_ADMIN_PANEL }>Admin Panel</a></FormHelperText>
+              <FormHelperText id="helpertext-labelInputField">{Orca.i18n.activityExecutionCalendar.editor.manage_spot_hint} <a href={Orca.manage_spot_link}>{Orca.i18n.activityExecutionCalendar.editor.manage_spot_link_text}</a></FormHelperText>
 
               <FormControl className={ classes.formControl }>
-                <InputLabel id="labelInputLanguages">Languages</InputLabel>
+                <InputLabel id="labelInputLanguages">{Orca.i18n.activityExecutionCalendar.editor.languages}</InputLabel>
                 <Select
                   labelId="labelInputLanguages"
                   id="inputLanguages"
@@ -326,14 +327,14 @@ class EventEditor extends Component<EventEditorProps, EventEditorState> {
                   <Checkbox
                     id="inputHasTransport"
                     name="hasTransport"
-                    defaultChecked
-                    value={ this.state.selectedEvent.hasTransport }
+                    checked={ this.state.selectedEvent.hasTransport }
+                    value={true}
                     onChange={ this.handleChange }
                     color="primary"
                     inputProps={{ 'aria-label': 'secondary checkbox' }}
                   />
                 }
-                label="hasTransport"
+                label={Orca.i18n.activityExecutionCalendar.editor.has_transport}
               />
             </CardContent>
 

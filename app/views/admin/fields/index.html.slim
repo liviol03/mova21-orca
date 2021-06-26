@@ -12,6 +12,6 @@ h1 = t('fields.index.title', spot: @spot.name)
         tr
           td = field.name
           td = link_to t('buttons.edit'), edit_admin_spot_field_path(@spot, field)
-          td = link_to t('buttons.destroy'), admin_spot_field_path(@spot, field), data: { confirm: 'Are you sure?' }, method: :delete
+          td = link_to t('buttons.destroy'), admin_spot_field_path(@spot, field), data: { confirm: t('buttons.confirm_delete') }, method: :delete
 
 = link_to t('buttons.create'), new_admin_spot_field_path(@spot), class: 'btn btn-primary mb-3'

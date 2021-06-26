@@ -17,8 +17,7 @@ module Admin
       @fixed_event = FixedEvent.new
     end
 
-    def edit
-    end
+    def edit; end
 
     def create
       @fixed_event = FixedEvent.new(fixed_event_params)

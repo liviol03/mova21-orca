@@ -2,10 +2,11 @@
 
 require 'rails_helper'
 
+# rubocop:disable RSpec/DescribeClass
 RSpec.describe 'seeds.rb' do
   before do
     allow(ENV).to receive(:[]).and_call_original
-    allow(ENV).to receive(:[]).with("MIDATA_BASE_URL").and_return('pbs.puzzle.ch')
+    allow(ENV).to receive(:[]).with('MIDATA_BASE_URL').and_return('pbs.puzzle.ch')
   end
 
   it 'populates the app with some data' do
@@ -20,3 +21,4 @@ RSpec.describe 'seeds.rb' do
     expect(Stufe.count).to eq(4)
   end
 end
+# rubocop:enable RSpec/DescribeClass

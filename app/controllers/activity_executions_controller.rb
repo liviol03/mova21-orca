@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ActivityExecutionsController < ApplicationController
   load_and_authorize_resource :activity
   load_and_authorize_resource through: :activity
@@ -36,12 +38,14 @@ class ActivityExecutionsController < ApplicationController
   def activity_execution_params
     params.require(:activity_execution).permit(:starts_at, :ends_at, :field_id, :spot_id, :amount_participants,
                                                :transport, languages: []).tap do |params|
-      if params[:languages]
-        Activity::LANGUAGES.each do |language|
-          params[language] = params[:languages].include? language.to_s.sub('language_', '')
-        end
-        params.delete('languages')
-      end
+      convert_language_array_to_flags(params) if params[:languages]
     end
+  end
+
+  def convert_language_array_to_flags(params)
+    Activity::LANGUAGES.each do |language|
+      params[language] = params[:languages].include? language.to_s.sub('language_', '')
+    end
+    params.delete('languages')
   end
 end

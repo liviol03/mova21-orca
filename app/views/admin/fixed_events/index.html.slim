@@ -16,7 +16,7 @@ h1 = FixedEvent.model_name.human
           td = I18n.l(fixed_event.starts_at, format: :short)
           td = I18n.l(fixed_event.ends_at)
           td = link_to t('buttons.edit'), edit_admin_fixed_event_path(fixed_event)
-          td = link_to t('buttons.destroy'), admin_fixed_event_path(fixed_event), data: { confirm: 'Are you sure?' }, method: :delete
+          td = link_to t('buttons.destroy'), admin_fixed_event_path(fixed_event), data: { confirm: t('buttons.confirm_delete') }, method: :delete
 
 br
 

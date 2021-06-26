@@ -15,6 +15,6 @@ h1 = t('spots.index.title')
             => spot.fields.count
             i.fa.fa-edit
           td = link_to t('buttons.edit'), edit_admin_spot_path(spot)
-          td = link_to t('buttons.destroy'), admin_spot_path(spot), data: { confirm: 'Are you sure?' }, method: :delete
+          td = link_to t('buttons.destroy'), admin_spot_path(spot), data: { confirm: t('buttons.confirm_delete') }, method: :delete
 
 = link_to t('buttons.create'), new_admin_spot_path, class: 'btn btn-primary mb-3'

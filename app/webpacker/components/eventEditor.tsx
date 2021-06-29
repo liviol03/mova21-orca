@@ -68,7 +68,7 @@ interface FlattenedFullcalendarEvent {
   hasTransport: boolean;
   field: Field,
   allDay: boolean;
-  overlap: boolean;
+  fixedEvent: boolean;
 }
 
 interface EventEditorProps {
@@ -111,7 +111,7 @@ class EventEditor extends Component<EventEditorProps, EventEditorState> {
         hasTransport: true,
         languages: [],
         allDay: false,
-        overlap: true
+        fixedEvent: true
       },
       availableLanguages: [],       // languages available for this activity execution
 
@@ -144,12 +144,6 @@ class EventEditor extends Component<EventEditorProps, EventEditorState> {
       (new Date(event1.end) > new Date(event2.start) && new Date(event1.end) < new Date(event2.end)))
   }
 
-  // check if the new event is overlapping with a blocked one
-  checkIfEventsOverLap(event) {
-    let blockingEvents = this.state.events.filter(event => event.overlap === false)
-    return blockingEvents.some(event => this.isEventOverlapping(event, blockingEvents))
-  }
-
   handleChange = evt => {
     const value = evt.target.type === 'checkbox' ? evt.target.checked : evt.target.value;
     let newSelectedEventState = {
@@ -162,11 +156,6 @@ class EventEditor extends Component<EventEditorProps, EventEditorState> {
       this.setState({
         errorText: Orca.i18n.activityExecutionCalendar.editor.date_invalid
       })
-    // } else if (this.checkIfEventsOverLap(newSelectedEventState)) {
-    //   // check if new event is overlapping with a blocking event
-    //   this.setState({
-    //     errorText: Orca.i18n.activityExecutionCalendar.editor.date.overlapping_error
-    //   })
     } else {
       this.setState({
         selectedEvent: newSelectedEventState,
@@ -209,15 +198,17 @@ class EventEditor extends Component<EventEditorProps, EventEditorState> {
 
   // handling copy of event
   handleCopy = () => {
-    const { onCopy } = this.props
-
-    // trigger parent function passed by props
-    onCopy(this.state.selectedEvent.id)
+    // reset
+    let event = this.state.selectedEvent
+    event.id = null
+    
+    this.setState({
+      selectedEvent: event
+    })
   }
 
   render() {
     const { classes, onClose, onDelete } = this.props;
-    const LINK_TO_ADMIN_PANEL = window.origin + "/admin/spots"
 
     return (
       <Modal
@@ -228,6 +219,8 @@ class EventEditor extends Component<EventEditorProps, EventEditorState> {
         <Card className={ classes.modalCard }>
           <form onSubmit={ (evt) => this.handleSubmit(evt) }>
             <CardContent className={ classes.modalCardContent }>
+              <h2 id="modal-title">{ this.state.selectedEvent.id === null ? Orca.i18n.activityExecutionCalendar.editor.title_copy : Orca.i18n.activityExecutionCalendar.editor.title_edit }</h2>
+
               <TextField
                 key="inputStartTime"
                 name="start"

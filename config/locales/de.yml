@@ -178,6 +178,8 @@ de:
       error: 'Fehler beim Löschen der Durchführung:'
       success: Durchführung erfolgreich gelöscht
     editor:
+      title_copy: Kopieren
+      title_edit: Editieren
       date_invalid: Der Startzeitpunkt kann nicht vor dem Endzeitpunkt liegen
       has_transport: Mit Transport
       languages: Sprachen

@@ -54,7 +54,8 @@ class CalendarManager extends React.Component {
       error: null,          // to trigger error banner
       success: null,        // to trigger success banner
       mouseX: null,         // position of context menu
-      mouseY: null          // position of context menu
+      mouseY: null,         // position of context menu
+      clickedEventId: 0     // event id of the right clicked event
     }
   }
 
@@ -122,13 +123,22 @@ class CalendarManager extends React.Component {
     overlap: selectedEvent.overlap
   });
 
+  writeErrorMessage = (orcaI18nText, err) => {
+    let errorMessage = err
+
+    if(Array.isArray(err)) {
+      errorMessage = err.join(',')
+    }
+
+    this.setState({error: { message: `${orcaI18nText} ${errorMessage}`}})
+  }
+
   handleEventSave = (selectedEvent) => {
     const event = this.convertFormEventToFullCalendarEvent(selectedEvent)
     const API = this.state.calendarRef.current.getApi()
 
     // if id given, update event otherwise create new one
     if (event.id) {
-      // todo: better error handling
       this.state.activityExecutionService.update(this.state.activityId, event).then(result => {
         // save extended attributes to event object
 
@@ -143,7 +153,7 @@ class CalendarManager extends React.Component {
         this.state.event.setProp("backgroundColor", result.color)
         this.state.event.setDates(result.start)
         this.state.event.setEnd(result.end)
-        this.state.event.setProp("overlap", result.overlap)
+        this.state.event.setProp("fixedEvent", result.fixedEvent)
 
         this.handlContextMenuClose()
         this.setState({
@@ -151,10 +161,9 @@ class CalendarManager extends React.Component {
           showEditor: false,
         })
       }).catch((err) => {
-        this.setState({error: { message: `${Orca.i18n.activityExecutionCalendar.update.error} ${err.join(',')}`}})
+        this.writeErrorMessage(Orca.i18n.activityExecutionCalendar.update.error, err)
       })
     } else {
-      // todo: better error handling
       this.state.activityExecutionService.create(this.state.activityId, event).then(result => {
         API.addEvent(result)
 
@@ -163,33 +172,31 @@ class CalendarManager extends React.Component {
           success: Orca.i18n.activityExecutionCalendar.create.success,
           showEditor: false,
         })
-      })
-    }
-  }
-
-  handleEventCopy(eventId) {
-    const API = this.state.calendarRef.current.getApi()
-    let event = API.getEventById(eventId)
-    console.log(event);
-    if (event) {
-      // todo: better event handling
-      this.state.activityExecutionService.create(this.state.activityId, event).then(result => {
-        API.addEvent(result)
-
-        this.handlContextMenuClose()
-        this.setState({
-          success: Orca.i18n.activityExecutionCalendar.copy.success,
-          showEditor: false,
-        })
       }).catch((err) => {
-        this.setState({error: { message: `${Orca.i18n.activityExecutionCalendar.copy.error} ${err.join(',')}`}})
+        this.writeErrorMessage(Orca.i18n.activityExecutionCalendar.create.error, err)
       })
     }
   }
 
-  handleEdit = (eventId) => {
+  handleEventCopy() {
     const API = this.state.calendarRef.current.getApi()
-    let event = API.getEventById(eventId)
+    let event = API.getEventById(this.state.clickedEventId)
+
+    if (event) {
+      // reset id and provide as template for editor
+      event = event.toPlainObject()
+      event.id = null
+
+      this.setState({
+        showEditor: true,
+        event: event
+      })
+    }
+  }
+
+  handleEdit() {
+    const API = this.state.calendarRef.current.getApi()
+    let event = API.getEventById(this.state.clickedEventId)
 
     if (event) {
       this.setState({
@@ -199,9 +206,9 @@ class CalendarManager extends React.Component {
     }
   }
 
-  handleEventRemove(eventId) {
+  handleEventRemove() {
     const API = this.state.calendarRef.current.getApi()
-    let event = API.getEventById(eventId)
+    let event = API.getEventById(this.state.clickedEventId)
 
     if (event) {
       if (window.confirm(Orca.i18n.activityExecutionCalendar.delete.confirm)) {
@@ -221,6 +228,8 @@ class CalendarManager extends React.Component {
               error: Orca.i18n.activityExecutionCalendar.delete.error
             })
           }
+        }).catch((err) => {
+          this.writeErrorMessage(Orca.i18n.activityExecutionCalendar.delete.error, err)
         })
       }
     }
@@ -233,7 +242,7 @@ class CalendarManager extends React.Component {
           success: Orca.i18n.activityExecutionCalendar.move.success
         })
       }).catch((err) => {
-        this.setState({error: { message: `${Orca.i18n.activityExecutionCalendar.move.error} ${err.join(',')}`}})
+        this.writeErrorMessage(Orca.i18n.activityExecutionCalendar.move.error, err)
         evnt.revert();
       });
     } else {
@@ -248,7 +257,7 @@ class CalendarManager extends React.Component {
           success: Orca.i18n.activityExecutionCalendar.move.success
         })
       }).catch((err) => {
-        this.setState({error: { message: `${Orca.i18n.activityExecutionCalendar.move.error} ${err.join(',')}`}})
+        this.writeErrorMessage(Orca.i18n.activityExecutionCalendar.move.error, err)
         evnt.revert();
       })
     } else {
@@ -256,19 +265,21 @@ class CalendarManager extends React.Component {
     }
   }
 
-  handleContextMenuClick = (event) => {
+  handleContextMenuClick = (event, clickedEventId) => {
     event.preventDefault();
 
     this.setState({
       mouseX: event.clientX - 2,
       mouseY: event.clientY - 4,
+      clickedEventId: clickedEventId
     });
   };
 
   handlContextMenuClose = () => {
     this.setState({
       mouseX: null,
-      mouseY: null
+      mouseY: null,
+      clickedEventId: 0
     })
   };
 
@@ -276,11 +287,12 @@ class CalendarManager extends React.Component {
   renderEventContent(eventInfo) {
     const {classes} = this.props
     const eventDescription = eventInfo.event.extendedProps.field ? eventInfo.event.extendedProps.field.name : eventInfo.event.title;
+    
     return (
       <>
         <div title={`${eventInfo.timeText} - ${eventDescription}`}
              className={classes.eventContent}
-             onContextMenu={(evt) => eventInfo.event.overlap ? null : this.handleContextMenuClick(evt)}
+             onContextMenu={(evt) => eventInfo.event.overlap ? null : this.handleContextMenuClick(evt, eventInfo.event.id)}
              style={{cursor: 'context-menu'}}
         >
           {eventInfo.timeText && (
@@ -301,31 +313,12 @@ class CalendarManager extends React.Component {
                 : undefined
             }
           >
-            <MenuItem onClick={() => this.handleEdit(eventInfo.event.id)}><EditIcon/>Edit</MenuItem>
-            <MenuItem onClick={() => this.handleEventCopy(eventInfo.event.id)}><CopyIcon/>Copy</MenuItem>
-            <MenuItem size="small"
-                      onClick={() => this.handleEventRemove(eventInfo.event.id)}><DeleteIcon/>Delete</MenuItem>
+            <MenuItem onClick={() => this.handleEdit()}><EditIcon/>Edit</MenuItem>
+            <MenuItem onClick={() => this.handleEventCopy()}><CopyIcon/>Copy</MenuItem>
+            <MenuItem size="small" onClick={() => this.handleEventRemove()}><DeleteIcon/>Delete</MenuItem>
           </Menu>
         </div>
       </>
-    )
-  }
-
-  // render top information div displaying current events
-  renderSidebar() {
-    return (
-      <div className='calendar-manager-sidebar'>
-        <div className='calendar-manager-sidebar-section'>
-          <h2>Date range</h2>
-          <p> Only dates can be seleceted between {START_DATE.toString()} - {END_DATE.toString()}</p>
-        </div>
-        <div className='calendar-manager-sidebar-section'>
-          <h2>All Events ({this.state.events.length})</h2>
-          <ul>
-            {this.state.events.map((event) => this.renderSumEvent(event))}
-          </ul>
-        </div>
-      </div>
     )
   }
 
@@ -386,8 +379,6 @@ class CalendarManager extends React.Component {
   render() {
     return (
       <div className='calendar-manager'>
-        {/*{this.renderSidebar()}*/}
-
         <div className='calendar-manager-main'>
           {this.state.showEditor && (
             /* Show editor based on flag*/

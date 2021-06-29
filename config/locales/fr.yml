@@ -128,6 +128,31 @@ fr:
       possible: möglich
       simo_text: 'Benötigt Sicherheitsmodul:'
       stufe_recommended: 'Geeignet für:'
+  activity_execution_calendar:
+    copy:
+      error: "Erreur pendant la copie:"
+      success: "L'événement a été copié avec succès"
+    create:
+      error: "Erreur lors de la création:"
+      success: "L'événement a été créé avec succès"
+    delete:
+      confirm: "Êtes-vous sûr de vouloir supprimer l'exécution de l'activité ?"
+      error: "Impossible de supprimer l'exécution de l'événement"
+      success: "L'événement a été supprimé avec succès"
+    editor:
+      title_copy: Copier
+      title_edit: Modifier
+      date_invalid: "L'heure de début ne peut être antérieure à l'heure de fin."
+      has_transport: Avec le transport
+      languages: Langues
+      manage_spot_hint: "Si vous avez besoin de plus de places dans le programme, cliquez ici :"
+      manage_spot_link_text: "Gérer les spots du programme"
+    move:
+      error: "erreur lors du déplacement de l'événement:"
+      success: "L'événement a été déplacé avec succès"
+    update:
+      error: "erreur lors de la mise à jour:"
+      success: "L'événement a été mis à jour avec succès"
   app:
     title: Orca
   buttons:

@@ -35,7 +35,7 @@ interface FixedEvent {
     title: string;
     starts_at: Date;
     ends_at: Date;
-    overlap: true;
+    fixedEvent: true;
 }
 
 export interface Field {
@@ -81,7 +81,7 @@ export interface FullCalendarEvent {
         spot: Spot,
         hasTransport: boolean
     }
-    overlap: boolean;
+    fixedEvent: boolean;
     color: string;
 }
 
@@ -98,7 +98,14 @@ export class ActivityExecutionService {
             method: 'GET',
             headers: this.getHeaders()
         })
-            .then(response => response.json())
+            .then(response => {
+                if(response.status === 200) {
+                    return response.json()
+                }
+                else {
+                    throw response.statusText
+                }
+            })
             .then((activityExexutions: Array<ActivityExecution>) =>
                 activityExexutions.map(activityExexution => this.convertActivityExecutionToFullCalendarEvent(activityExexution)));
     }
@@ -108,7 +115,15 @@ export class ActivityExecutionService {
             method: 'GET',
             headers: this.getHeaders()
         })
-            .then(response => response.json())
+            .then(response => {
+                
+                if(response.status === 200) {
+                    return response.json()
+                }
+                else {
+                    throw response.statusText
+                }
+            })
             .then(fixedEvents => fixedEvents.map(fixedEvent => this.convertFixedEventsToFullCalendarEvent(fixedEvent)));
     }
 
@@ -125,7 +140,7 @@ export class ActivityExecutionService {
                 field: activityExexution.field,
                 hasTransport: activityExexution.transport
             },
-            overlap: false,
+            fixedEvent: false,
             color: activityExexution.spot.color
         };
     }
@@ -137,7 +152,7 @@ export class ActivityExecutionService {
             start: new Date(fixedEvent.starts_at),
             allDay: false,
             end: new Date(fixedEvent.ends_at),
-            overlap: true,
+            fixedEvent: true,
             color: '#ffeb00'
         };
     }
@@ -150,7 +165,14 @@ export class ActivityExecutionService {
         };
 
         return fetch(`/activities/${activityId}/activity_executions`, requestOptions)
-            .then(response => response.json())
+            .then(response => {
+                if(response.status === 200) {
+                    return response.json()
+                }
+                else {
+                    throw response.statusText
+                }
+            })
             .then((response: BackendResponse<ActivityExecution>) => {
                 if (isSuccessfulBackendResponse(response)) {
                     return this.convertActivityExecutionToFullCalendarEvent(response.data);
@@ -182,7 +204,14 @@ export class ActivityExecutionService {
         };
 
         return fetch(`/activities/${activityId}/activity_executions/${activityExecution.id}`, requestOptions)
-            .then(response => response.json())
+            .then(response => {
+                if(response.status === 200) {
+                    return response.json()
+                }
+                else {
+                    throw response.statusText
+                }
+            })
             .then((response: BackendResponse<ActivityExecution>) => {
                 if (isSuccessfulBackendResponse(response)) {
                     return this.convertActivityExecutionToFullCalendarEvent(response.data);

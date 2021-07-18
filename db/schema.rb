@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_20_150922) do
+ActiveRecord::Schema.define(version: 2021_06_22_124902) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -254,6 +254,18 @@ ActiveRecord::Schema.define(version: 2021_06_20_150922) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  create_table "unit_activities", force: :cascade do |t|
+    t.bigint "unit_id", null: false
+    t.bigint "activity_id", null: false
+    t.integer "priority"
+    t.text "remarks"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["activity_id"], name: "index_unit_activities_on_activity_id"
+    t.index ["priority"], name: "index_unit_activities_on_priority"
+    t.index ["unit_id"], name: "index_unit_activities_on_unit_id"
+  end
+
   create_table "units", force: :cascade do |t|
     t.integer "pbs_id"
     t.string "title"
@@ -306,6 +318,8 @@ ActiveRecord::Schema.define(version: 2021_06_20_150922) do
   add_foreign_key "invoices", "units"
   add_foreign_key "participant_units", "participants"
   add_foreign_key "participant_units", "units"
+  add_foreign_key "unit_activities", "activities"
+  add_foreign_key "unit_activities", "units"
   add_foreign_key "units", "kvs", primary_key: "pbs_id"
   add_foreign_key "units", "leaders", column: "al_id"
   add_foreign_key "units", "leaders", column: "coach_id"

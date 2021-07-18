@@ -30,6 +30,7 @@
     "react-moment": "^1.1.1",
     "react-recompose": "^0.31.1",
     "react_ujs": "^2.6.1",
+    "sortablejs": "^1.14.0",
     "ts-loader": "^8.0.14",
     "turbolinks": "^5.2.0",
     "typescript": "^4.1.3"

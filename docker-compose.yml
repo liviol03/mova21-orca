@@ -48,7 +48,7 @@ services:
       SMTP_PORT: 25
       SMTP_AUTH: ${SMTP_AUTH:-plain}
       CAMP_START: ${CAMP_START:-2022-07-23}
-      CAMP_END: ${CAMP_START:-2022-08-06}
+      CAMP_END: ${CAMP_END:-2022-08-06}
     depends_on:
       - db
       - mail
